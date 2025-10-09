@@ -1,10 +1,9 @@
-const express = require('express');
+import express from 'express';
+import { getPrices } from '../controller/controller.js';
 
 const router = express.Router();
 
-// GET /prices
-router.get('/prices/', (req, res) => {
-    res.json({ message: 'Prices route is working!' });
-});
+// Define the route to get prices
+router.get('/', getPrices);
 
-module.exports = router;
+export default router;
