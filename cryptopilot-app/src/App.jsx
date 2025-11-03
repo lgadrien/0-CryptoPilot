@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800">
+      <header className="w-full py-6 bg-white shadow-sm">
+        <div className="container mx-auto flex justify-between items-center px-6">
+          <h1 className="text-2xl font-bold text-blue-600">MyLanding</h1>
+          <nav className="space-x-4">
+            <a href="#" className="hover:text-blue-600">Accueil</a>
+            <a href="#" className="hover:text-blue-600">Fonctionnalités</a>
+            <a href="#" className="hover:text-blue-600">Contact</a>
+          </nav>
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4">
+        <h2 className="text-4xl md:text-5xl font-extrabold mb-4">
+          Simplifie ton workflow avec <span className="text-blue-600">MyLanding</span>
+        </h2>
+        <p className="text-lg text-gray-600 max-w-xl mb-8">
+          Une solution rapide, moderne et légère pour booster ta productivité.
         </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+        <div className="space-x-4">
+          <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
+            Commencer
+          </button>
+          <button className="border border-blue-600 text-blue-600 px-6 py-3 rounded-xl hover:bg-blue-50 transition">
+            En savoir plus
+          </button>
+        </div>
+      </main>
+
+      <footer className="py-4 text-gray-500 text-sm">
+        © {new Date().getFullYear()} MyLanding. Tous droits réservés.
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
