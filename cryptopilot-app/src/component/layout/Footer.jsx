@@ -1,8 +1,7 @@
 function Footer() {
   return (
     <footer
-      className="py-3 text-center border-t border-[#1C1F26] text-gray-500 font-[Nunito]"
-      style={{ backgroundColor: '#0B0D12' }}
+      className="py-3 text-center border-t border-gray-200 dark:border-[#1C1F26] text-gray-600 dark:text-gray-500 bg-white dark:bg-[#0B0D12] font-[Nunito] transition-colors duration-300"
     >
       <p className="text-xs tracking-wide">
         © {new Date().getFullYear()}{" "}
