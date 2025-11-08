@@ -10,6 +10,22 @@ html, body, #root {
   font-family: 'Nunito', sans-serif;
 }
 
+/* Transition smooth pour le changement de thème */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Transition pour tous les éléments avec dark mode */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
 /* Animation pour le menu mobile */
 @keyframes slide-down {
   from {

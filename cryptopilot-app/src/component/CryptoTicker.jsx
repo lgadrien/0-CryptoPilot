@@ -57,7 +57,7 @@ function CryptoTicker() {
   if (error) {
     return (
       <div
-        className="w-full text-center py-2 sm:py-3 text-xs sm:text-sm text-red-400 font-sans bg-gray-100 dark:bg-[#0B0D12] transition-colors duration-300"
+        className="w-full text-center py-2 sm:py-3 text-xs sm:text-sm text-red-500 dark:text-red-400 font-sans bg-white dark:bg-[#0B0D12] transition-colors duration-300"
       >
         {error}
       </div>
@@ -67,7 +67,7 @@ function CryptoTicker() {
   if (loading || cryptos.length === 0) {
     return (
       <div
-        className="w-full text-center py-2 sm:py-3 text-xs sm:text-sm text-gray-500 dark:text-gray-500 font-sans bg-gray-100 dark:bg-[#0B0D12] transition-colors duration-300"
+        className="w-full text-center py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-sans bg-white dark:bg-[#0B0D12] transition-colors duration-300"
       >
         Chargement des données crypto...
       </div>
@@ -76,7 +76,7 @@ function CryptoTicker() {
 
   return (
     <div
-      className="w-full overflow-hidden border-t border-gray-200 dark:border-[#1C1F26] bg-gray-100 dark:bg-[#0B0D12] group cursor-pointer font-sans transition-colors duration-300"
+      className="w-full overflow-hidden border-t border-gray-200 dark:border-[#1C1F26] bg-white dark:bg-[#0B0D12] group cursor-pointer font-sans transition-colors duration-300"
     >
       <div className="relative flex whitespace-nowrap">
         {/* Bande principale */}
@@ -84,7 +84,7 @@ function CryptoTicker() {
           {cryptos.map((coin) => (
             <div
               key={coin.id}
-              className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300"
+              className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-800 dark:text-white"
             >
               <img src={coin.image} alt={coin.name} className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="font-semibold text-[#D4AF37]">
@@ -114,7 +114,7 @@ function CryptoTicker() {
           {cryptos.map((coin) => (
             <div
               key={`${coin.id}-clone`}
-              className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300"
+              className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-800 dark:text-white"
             >
               <img src={coin.image} alt={coin.name} className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="font-semibold text-[#D4AF37]">

@@ -7,6 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <title>CryptoPilot</title>
+    <!-- Script pour appliquer le thème AVANT le rendu pour éviter le flash -->
+    <script>
+      (function() {
+        const saved = localStorage.getItem('theme');
+        const isDark = saved ? saved === 'dark' : true;
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

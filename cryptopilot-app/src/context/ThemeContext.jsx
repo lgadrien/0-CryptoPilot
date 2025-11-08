@@ -6,23 +6,14 @@ export function ThemeProvider({ children }) {
   const [isDark, setIsDark] = useState(() => {
     // Récupérer la préférence sauvegardée ou utiliser le mode sombre par défaut
     const saved = localStorage.getItem('theme');
-    const initialTheme = saved ? saved === 'dark' : true;
-    
-    // Appliquer immédiatement la classe au chargement
-    if (initialTheme) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
-    return initialTheme;
+    return saved ? saved === 'dark' : true;
   });
 
   useEffect(() => {
     // Sauvegarder la préférence
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     
-    // Appliquer la classe au html
+    // Appliquer la classe au html (avec transition CSS automatique)
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
