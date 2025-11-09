@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const AuthContext = createContext();
 
@@ -23,22 +23,29 @@ export function AuthProvider({ children }) {
     }
   }, [isAuthenticated, user]);
 
-  const login = (userData) => {
+  const login = useCallback((userData) => {
     setIsAuthenticated(true);
     setUser(userData);
     // TODO: Intégrer avec votre API backend
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsAuthenticated(false);
     setUser(null);
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
     // TODO: Intégrer avec votre API backend
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    isAuthenticated,
+    user,
+    login,
+    logout
+  }), [isAuthenticated, user, login, logout]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

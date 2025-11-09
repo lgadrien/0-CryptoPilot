@@ -1,8 +1,21 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
 import { User, LogOut, Menu, X, Home, LayoutDashboard, Bell } from 'lucide-react';
+
+// Composant NavLink mémorisé
+const NavLink = memo(({ to, onClick, icon: Icon, children, className = "" }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className={className}
+  >
+    {Icon && <Icon className="w-5 h-5" />}
+    {children}
+  </Link>
+));
+NavLink.displayName = 'NavLink';
 
 function Header() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -12,17 +25,18 @@ function Header() {
   const headerRef = useRef(null);
   const userMenuRef = useRef(null);
   
-  // Nombre de notifications (exemple)
   const notificationCount = 3;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/');
     setShowMobileMenu(false);
     setShowUserMenu(false);
-  };
+  }, [logout, navigate]);
 
-  const closeMobileMenu = () => setShowMobileMenu(false);
+  const closeMobileMenu = useCallback(() => setShowMobileMenu(false), []);
+  const toggleUserMenu = useCallback(() => setShowUserMenu(prev => !prev), []);
+  const toggleMobileMenu = useCallback(() => setShowMobileMenu(prev => !prev), []);
 
   // Fermer les menus si on clique en dehors
   useEffect(() => {
@@ -61,26 +75,26 @@ function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link
+          <NavLink
             to="/"
+            icon={Home}
             className="group flex items-center gap-2"
           >
-            <Home className="w-4 h-4 text-gray-600 dark:text-gray-300 transition-colors duration-400 group-hover:text-[#D4AF37]" />
             <span className="bg-gradient-to-r from-[#D4AF37] to-[#F5D76E] bg-clip-text transition-all duration-400 text-gray-600 dark:text-gray-300 group-hover:text-transparent">
               Home
             </span>
-          </Link>
+          </NavLink>
           
           {isAuthenticated && (
-            <Link
+            <NavLink
               to="/dashboard"
+              icon={LayoutDashboard}
               className="group flex items-center gap-2"
             >
-              <LayoutDashboard className="w-4 h-4 text-gray-600 dark:text-gray-300 transition-colors duration-400 group-hover:text-[#D4AF37]" />
               <span className="bg-gradient-to-r from-[#D4AF37] to-[#F5D76E] bg-clip-text transition-all duration-400 text-gray-600 dark:text-gray-300 group-hover:text-transparent">
                 Dashboard
               </span>
-            </Link>
+            </NavLink>
           )}
 
           <ThemeToggle />
@@ -100,7 +114,7 @@ function Header() {
               {/* User Menu Dropdown */}
               <div className="relative" ref={userMenuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={toggleUserMenu}
                   className="flex items-center gap-2 bg-[#D4AF37] text-[#0B0D12] px-4 py-2 rounded-lg font-semibold hover:bg-[#F5D76E] transition-all"
                 >
                   <User className="w-4 h-4" />
@@ -114,14 +128,14 @@ function Header() {
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{user?.username || 'Utilisateur'}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
                     </div>
-                    <Link
+                    <NavLink
                       to="/dashboard"
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={toggleUserMenu}
+                      icon={LayoutDashboard}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] transition-colors"
                     >
-                      <LayoutDashboard className="w-4 h-4" />
                       Dashboard
-                    </Link>
+                    </NavLink>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-[#0B0D12] transition-colors"
@@ -147,7 +161,7 @@ function Header() {
         <div className="flex md:hidden items-center gap-3">
           <ThemeToggle />
           <button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            onClick={toggleMobileMenu}
             className="p-2 text-gray-600 dark:text-gray-300 hover:text-[#D4AF37] transition-colors"
             aria-label="Menu"
           >
@@ -160,24 +174,24 @@ function Header() {
       {showMobileMenu && (
         <div className="fixed top-16 left-0 right-0 bg-white dark:bg-[#1C1F26] border-b border-gray-200 dark:border-[#2A2D35] md:hidden z-50 shadow-xl animate-slide-down">
           <nav className="flex flex-col p-4 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
-              <Link
+              <NavLink
                 to="/"
                 onClick={closeMobileMenu}
                 className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] px-4 py-3 rounded-lg transition-colors font-medium"
+                icon={Home}
               >
-                <Home className="w-5 h-5 text-[#D4AF37]" />
                 Home
-              </Link>
+              </NavLink>
               
               {isAuthenticated && (
-                <Link
+                <NavLink
                   to="/dashboard"
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] px-4 py-3 rounded-lg transition-colors font-medium"
+                  icon={LayoutDashboard}
                 >
-                  <LayoutDashboard className="w-5 h-5 text-[#D4AF37]" />
                   Dashboard
-                </Link>
+                </NavLink>
               )}
 
               <div className="border-t border-gray-200 dark:border-[#2A2D35] my-2" />

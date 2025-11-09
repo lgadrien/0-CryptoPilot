@@ -49,6 +49,26 @@ export default {
             boxShadow: '0 0 20px rgba(212, 175, 55, 0.8), 0 0 40px rgba(212, 175, 55, 0.6)',
             transform: 'scale(1.2)'
           }
+        },
+        'drift-1': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-15px)' }
+        },
+        'drift-2': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' }
+        },
+        'drift-3': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-12px)' }
+        },
+        'drift-4': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-18px)' }
+        },
+        'drift-5': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' }
         }
       },
       animation: {
@@ -56,7 +76,12 @@ export default {
         'gradient': 'gradient 3s ease infinite',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
         'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 3s ease-in-out infinite'
+        'glow': 'glow 3s ease-in-out infinite',
+        'drift-1': 'drift-1 8s ease-in-out infinite',
+        'drift-2': 'drift-2 10s ease-in-out infinite',
+        'drift-3': 'drift-3 7s ease-in-out infinite',
+        'drift-4': 'drift-4 9s ease-in-out infinite',
+        'drift-5': 'drift-5 11s ease-in-out infinite'
       }
     },
   },

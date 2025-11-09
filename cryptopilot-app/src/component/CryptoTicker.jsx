@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 
 // Constantes
 const API_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h";
@@ -6,7 +6,7 @@ const REFRESH_INTERVAL = 120000; // 2 minutes
 const RETRY_DELAY = 10000; // 10 secondes
 
 // Composant pour chaque crypto
-const CryptoItem = ({ coin }) => (
+const CryptoItem = memo(({ coin }) => (
   <div className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-800 dark:text-white">
     <img 
       src={coin.image} 
@@ -28,7 +28,7 @@ const CryptoItem = ({ coin }) => (
       {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
     </span>
   </div>
-);
+));
 
 function CryptoTicker() {
   const [cryptos, setCryptos] = useState([]);
@@ -54,14 +54,14 @@ function CryptoTicker() {
       const data = await response.json();
       
       if (!Array.isArray(data)) {
-        throw new Error("Format de réponse inattendu");
+        throw new Error("Format de rï¿½ponse inattendu");
       }
       
       setCryptos(data);
       setError(null);
     } catch (err) {
       console.error("Erreur de chargement:", err);
-      setError("Impossible de charger les données.");
+      setError("Impossible de charger les donnï¿½es.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ function CryptoTicker() {
   if (loading || cryptos.length === 0) {
     return (
       <div className="w-full text-center py-2 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-sans bg-white dark:bg-[#0B0D12] transition-colors duration-300">
-        Chargement des données crypto...
+        Chargement des donnï¿½es crypto...
       </div>
     );
   }
