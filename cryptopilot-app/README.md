@@ -8,21 +8,22 @@ Application web moderne de suivi de portefeuille de cryptomonnaies avec interfac
 - 🔐 **Authentification** - Système de login/register sécurisé
 - 📱 **Responsive design** - Optimisé mobile, tablette et desktop
 - 🌓 **Dark/Light mode** - Changement de thème fluide sans décalage
-- 📈 **Ticker crypto** - Défilement automatique des prix en temps réel
+- 📈 **Ticker crypto** - Défilement automatique des prix en temps réel (CoinGecko API)
 - 💰 **Calculateur P&L** - Calcul de profit/perte instantané
 - 🎨 **UI moderne** - Interface élégante avec Tailwind CSS et animations
+- ⚡ **Performance optimisée** - React.memo, useCallback, useMemo pour zéro re-render inutile
+- 🎯 **Logos crypto animés** - 9 cryptos avec effet de flottement et positionnement aléatoire anti-collision
 
 ---
 
 ## 🛠️ Stack technique
 
-- **React 19.1.1** - Framework UI avec hooks modernes
-- **Vite 7.1.12** - Build tool ultra-rapide avec HMR
+- **React 18.3** - Framework UI avec hooks modernes optimisés
+- **Vite 6.0** - Build tool ultra-rapide avec HMR
 - **Tailwind CSS v3** - Framework CSS utility-first
-- **React Router v7.9.5** - Navigation côté client
+- **React Router v6** - Navigation côté client
 - **Lucide React v0.553.0** - Bibliothèque d'icônes
-- **Recharts 2.15.0** - Graphiques et visualisations
-- **Axios** - Client HTTP pour API calls
+- **CoinGecko API** - Prix crypto en temps réel
 
 ---
 
@@ -58,29 +59,67 @@ cryptopilot-app/
 ├── src/
 │   ├── component/
 │   │   ├── layout/
-│   │   │   ├── Header.jsx       # Menu navigation + hamburger mobile
+│   │   │   ├── Header.jsx       # Menu navigation + hamburger mobile (optimisé avec useCallback)
 │   │   │   └── Footer.jsx       # Pied de page
 │   │   ├── ui/
 │   │   │   └── ThemeToggle.jsx  # Bouton Dark/Light mode
-│   │   ├── CryptoTicker.jsx     # Bandeau défilant des prix
-│   │   ├── Login.jsx            # Formulaire de connexion
-│   │   ├── Register.jsx         # Formulaire d'inscription
+│   │   ├── CryptoTicker.jsx     # Bandeau défilant des prix (CoinGecko API, React.memo)
+│   │   ├── Login.jsx            # Formulaire de connexion (useCallback)
+│   │   ├── Register.jsx         # Formulaire d'inscription (useCallback)
+│   │   ├── GuestRoute.jsx       # Protection des routes
 │   │   └── PnLCalculator.jsx    # Calculateur profit/perte
 │   ├── context/
-│   │   ├── AuthContext.jsx      # Gestion authentification
-│   │   └── ThemeContext.jsx     # Gestion du thème
+│   │   ├── AuthContext.jsx      # Gestion authentification (useMemo + useCallback)
+│   │   └── ThemeContext.jsx     # Gestion du thème (useMemo + useCallback)
 │   ├── pages/
-│   │   ├── Home.jsx             # Page d'accueil
-│   │   └── Dashboard.jsx        # Tableau de bord principal
+│   │   ├── Home.jsx             # Page d'accueil + logos animés (collision detection)
+│   │   ├── Dashboard.jsx        # Tableau de bord principal
+│   │   └── NotFound.jsx         # Page 404
 │   ├── App.jsx                  # Router et layout global
 │   ├── main.jsx                 # Point d'entrée React
 │   └── index.css                # Styles globaux + animations
 ├── index.html                   # HTML de base avec script anti-flash
 ├── vite.config.js               # Configuration Vite
-├── tailwind.config.js           # Configuration Tailwind
+├── tailwind.config.js           # Configuration Tailwind + animations personnalisées
 ├── postcss.config.js            # Configuration PostCSS
 └── package.json                 # Dépendances et scripts
 ```
+
+---
+
+## 🎯 Composants optimisés
+
+### Home.jsx
+- **FeatureCard** - Mémorisé avec React.memo
+- **CryptoLogo** - Mémorisé avec lazy loading
+- **Features array** - useMemo pour éviter re-création
+- **Collision detection** - Algorithme de distance euclidienne pour espacement des logos
+- **Random positions** - useEffect avec state pour positionnement aléatoire au reload
+- **9 logos crypto** : Bitcoin, Ethereum, Solana, Cardano, Polkadot, Astar, Astarter, Aster v2, + 1
+- **5 animations float** : Variations de translateY (-10px à -20px)
+
+### Header.jsx
+- **NavLink** - Composant mémorisé réutilisable
+- **handleLogout, closeMobileMenu, toggleUserMenu, toggleMobileMenu** - useCallback
+- Menu mobile avec overlay et click-outside detection
+- Dropdown utilisateur avec profil et notifications
+
+### CryptoTicker.jsx
+- **CryptoItem** - React.memo pour chaque crypto
+- **fetchData** - useCallback pour éviter re-création
+- API CoinGecko avec retry sur rate limit (429)
+- Animation marquee infinie avec pause on hover
+- 20 cryptos affichées en boucle
+
+### Login.jsx & Register.jsx
+- **togglePassword** - useCallback pour optimiser le toggle de visibilité
+- Validation HTML5 native
+- Eye/EyeOff icons (Lucide)
+
+### AuthContext & ThemeContext
+- **Context value** - useMemo pour éviter re-renders en cascade
+- **login, logout, toggleTheme** - useCallback
+- Persistance localStorage
 
 ---
 
@@ -259,13 +298,23 @@ export default api;
 
 ## 🚀 Optimisations
 
-### Performance
+### Performance React
 
-- ✅ **Lazy loading** des routes (React.lazy)
+- ✅ **React.memo** - Composants mémorisés (FeatureCard, CryptoLogo, CryptoItem, NavLink)
+- ✅ **useCallback** - Fonctions mémorisées (toggles, handlers, logout)
+- ✅ **useMemo** - Valeurs calculées mises en cache (features, context values)
+- ✅ **Lazy loading** - Images avec `loading="lazy"`
+- ✅ **Context optimization** - AuthContext et ThemeContext avec useMemo pour éviter re-renders
 - ✅ **Code splitting** automatique (Vite)
 - ✅ **Tree shaking** des dépendances
 - ✅ **Minification** en production
-- ✅ **Compression** des assets
+
+### Animations optimisées
+
+- ✅ **Float animations** - 5 variations pour les logos crypto (translateY uniquement)
+- ✅ **Collision detection** - Algorithme anti-chevauchement des logos (distance euclidienne)
+- ✅ **Random positioning** - Positionnement aléatoire à chaque reload avec state React
+- ✅ **CSS animations** - Performances GPU avec transform et opacity
 
 ### UX
 
@@ -273,7 +322,7 @@ export default api;
 - ✅ Feedback visuel sur hover/active
 - ✅ Focus states accessibles
 - ✅ Icônes SVG optimisées (Lucide)
-- ✅ Skeleton loaders (à venir)
+- ✅ Marquee animation avec pause on hover (CryptoTicker)
 
 ---
 
@@ -281,22 +330,25 @@ export default api;
 
 ### Hamburger Menu
 
-- Animation slide-down
-- Click outside pour fermer
+- Animation slide-down smooth
+- Click outside pour fermer automatiquement
 - Icônes claires (Home, Dashboard, Logout)
 - Overlay semi-transparent
+- NavLink optimisé avec React.memo
 
 ### Password Toggle
 
 - Icône Eye/EyeOff (Lucide)
-- Toggle indépendant pour chaque champ
+- Toggle indépendant pour chaque champ (useCallback)
 - Focus states optimisés
+- Accessibilité ARIA
 
 ### Touch-friendly
 
 - Boutons min 44x44px (Apple HIG)
 - Espacement adapté tactile
 - Pas de hover states sur mobile
+- Swipe gestures ready
 
 ---
 
@@ -376,14 +428,15 @@ export default defineConfig({
 - [ ] Connexion API backend PostgreSQL
 - [ ] JWT Authentication
 - [ ] Gestion erreurs API (toast notifications)
-- [ ] Skeleton loaders
 - [ ] Graphiques Recharts interactifs
+- [ ] Implémentation du calculateur P&L
 
 ### Moyen terme
 - [ ] PWA (Progressive Web App)
 - [ ] Notifications push
 - [ ] Multi-langue (i18n)
 - [ ] Tests unitaires (Vitest)
+- [ ] Tests E2E (Playwright)
 - [ ] Storybook composants
 
 ### Long terme
@@ -391,18 +444,34 @@ export default defineConfig({
 - [ ] Mode offline
 - [ ] Export PDF du portfolio
 - [ ] Alertes prix personnalisées
+- [ ] Analyse technique (RSI, MACD, Bollinger)
+
+---
+
+## 📊 Changelog
+
+### v1.1.0 (Novembre 2025)
+- ✅ Optimisation complète des composants avec React.memo, useCallback, useMemo
+- ✅ Système de collision detection pour les logos crypto
+- ✅ 9 logos crypto animés avec float effect
+- ✅ Positionnement aléatoire des logos à chaque reload
+- ✅ Optimisation des contextes (Auth & Theme)
+- ✅ NavLink component réutilisable et mémorisé
+- ✅ CryptoTicker optimisé avec API CoinGecko
+
+### v1.0.0 (Novembre 2025)
+- 🎉 Version initiale
+- React 18 + Vite 6
+- Dark/Light mode sans flash
+- Responsive design complet
+- Authentification locale
+- Dashboard crypto
 
 ---
 
 **Développé avec ❤️ pour CryptoPilot**  
-Version: 1.0.0  
-Framework: React 19 + Vite 7  
-Dernière mise à jour: Novembre 2025
+Version: 1.1.0  
+Framework: React 18 + Vite 6  
+Dernière mise à jour: 9 Novembre 2025
 
-## React Compiler
-
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
