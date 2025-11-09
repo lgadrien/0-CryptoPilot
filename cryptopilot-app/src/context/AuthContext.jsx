@@ -1,11 +1,27 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Simuler l'état de connexion (à remplacer par votre vraie logique backend)
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  // Récupérer l'état depuis le localStorage au chargement
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAuthenticated') === 'true';
+  });
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // Sauvegarder dans le localStorage quand l'état change
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+    }
+  }, [isAuthenticated, user]);
 
   const login = (userData) => {
     setIsAuthenticated(true);
@@ -16,6 +32,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
     // TODO: Intégrer avec votre API backend
   };
 

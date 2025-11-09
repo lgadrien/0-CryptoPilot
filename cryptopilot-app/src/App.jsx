@@ -3,8 +3,10 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import Header from './component/layout/Header';
 import Footer from './component/layout/Footer';
+import GuestRoute from './component/GuestRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import NotFound from './pages/NotFound';
 import Login from './component/Login';
 import Register from './component/Register';
 
@@ -18,8 +20,9 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+              <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
           </div>
