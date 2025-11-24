@@ -2,7 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
-import { User, LogOut, Menu, X, Home, LayoutDashboard, Bell } from 'lucide-react';
+import { useMetaMask } from '../../hooks/useMetaMask';
+import { User, LogOut, Menu, X, Home, LayoutDashboard, Bell, Wallet } from 'lucide-react';
 
 // Composant NavLink mémorisé
 const NavLink = memo(({ to, onClick, icon: Icon, children, className = "" }) => (
@@ -18,7 +19,8 @@ const NavLink = memo(({ to, onClick, icon: Icon, children, className = "" }) => 
 NavLink.displayName = 'NavLink';
 
 function Header() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, authMethod, walletAddress } = useAuth();
+  const { formatAddress } = useMetaMask();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
@@ -62,7 +64,7 @@ function Header() {
     <header ref={headerRef} className="w-full bg-white dark:bg-[#0B0D12] border-b border-gray-200 dark:border-[#1C1F26] transition-colors duration-300 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-6 h-16 md:h-20 font-[Nunito]">
         {/* Logo avec hover glow */}
-        <Link to="/" onClick={closeMobileMenu} className="group flex items-center space-x-2 md:space-x-3 flex-shrink-0">
+        <Link to={isAuthenticated ? "/dashboard" : "/"} onClick={closeMobileMenu} className="group flex items-center space-x-2 md:space-x-3 flex-shrink-0">
           <img
             src="/assets/LogonoBG.png"
             alt="CryptoPilot"
@@ -75,17 +77,17 @@ function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <NavLink
-            to="/"
-            icon={Home}
-            className="group flex items-center gap-2"
-          >
-            <span className="bg-gradient-to-r from-[#D4AF37] to-[#F5D76E] bg-clip-text transition-all duration-400 text-gray-600 dark:text-gray-300 group-hover:text-transparent">
-              Home
-            </span>
-          </NavLink>
-          
-          {isAuthenticated && (
+          {!isAuthenticated ? (
+            <NavLink
+              to="/"
+              icon={Home}
+              className="group flex items-center gap-2"
+            >
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#F5D76E] bg-clip-text transition-all duration-400 text-gray-600 dark:text-gray-300 group-hover:text-transparent">
+                Home
+              </span>
+            </NavLink>
+          ) : (
             <NavLink
               to="/dashboard"
               icon={LayoutDashboard}
@@ -117,16 +119,32 @@ function Header() {
                   onClick={toggleUserMenu}
                   className="flex items-center gap-2 bg-[#D4AF37] text-[#0B0D12] px-4 py-2 rounded-lg font-semibold hover:bg-[#F5D76E] transition-all"
                 >
-                  <User className="w-4 h-4" />
-                  <span className="hidden lg:inline">{user?.username || 'Profil'}</span>
+                  {authMethod === 'metamask' ? <Wallet className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                  <span className="hidden lg:inline">
+                    {authMethod === 'metamask' && walletAddress 
+                      ? formatAddress(walletAddress) 
+                      : user?.username || 'Profil'}
+                  </span>
                 </button>
 
                 {/* Dropdown Menu */}
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1C1F26] rounded-lg shadow-xl border border-gray-200 dark:border-[#2A2D35] overflow-hidden animate-slide-down">
                     <div className="p-3 border-b border-gray-200 dark:border-[#2A2D35]">
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{user?.username || 'Utilisateur'}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
+                      {authMethod === 'metamask' ? (
+                        <>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Wallet className="w-4 h-4 text-orange-500" />
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">MetaMask</p>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatAddress(walletAddress)}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{user?.username || 'Utilisateur'}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
+                        </>
+                      )}
                     </div>
                     <NavLink
                       to="/dashboard"
@@ -174,16 +192,16 @@ function Header() {
       {showMobileMenu && (
         <div className="fixed top-16 left-0 right-0 bg-white dark:bg-[#1C1F26] border-b border-gray-200 dark:border-[#2A2D35] md:hidden z-50 shadow-xl animate-slide-down">
           <nav className="flex flex-col p-4 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
-              <NavLink
-                to="/"
-                onClick={closeMobileMenu}
-                className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] px-4 py-3 rounded-lg transition-colors font-medium"
-                icon={Home}
-              >
-                Home
-              </NavLink>
-              
-              {isAuthenticated && (
+              {!isAuthenticated ? (
+                <NavLink
+                  to="/"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] px-4 py-3 rounded-lg transition-colors font-medium"
+                  icon={Home}
+                >
+                  Home
+                </NavLink>
+              ) : (
                 <NavLink
                   to="/dashboard"
                   onClick={closeMobileMenu}

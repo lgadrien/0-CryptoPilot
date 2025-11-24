@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import CryptoTicker from '../component/CryptoTicker';
+import CryptoTicker from '../component/layout/CryptoTicker';
 import { TrendingUp, Wallet, Zap } from 'lucide-react';
 import { useState, useEffect, useMemo, memo } from 'react';
 

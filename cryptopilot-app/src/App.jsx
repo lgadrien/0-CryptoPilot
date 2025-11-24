@@ -7,8 +7,8 @@ import GuestRoute from './component/GuestRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
-import Login from './component/Login';
-import Register from './component/Register';
+import Login from './component/auth/Login';
+import Register from './component/auth/Register';
 
 function App() {
   return (

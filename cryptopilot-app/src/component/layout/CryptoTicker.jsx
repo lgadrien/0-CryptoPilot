@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, memo } from "react";
+import cryptoService from "../../services/cryptoService";
 
 // Constantes
-const API_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h";
 const REFRESH_INTERVAL = 120000; // 2 minutes
 const RETRY_DELAY = 10000; // 10 secondes
 
@@ -38,30 +38,24 @@ function CryptoTicker() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL, {
-        headers: { 'Accept': 'application/json' }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn("Rate limit atteint, nouvelle tentative dans 10s...");
-          setTimeout(fetchData, RETRY_DELAY);
-          return;
-        }
-        throw new Error(`Erreur HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = await cryptoService.getTopCryptos(20);
       
       if (!Array.isArray(data)) {
-        throw new Error("Format de r�ponse inattendu");
+        throw new Error("Format de réponse inattendu");
       }
       
       setCryptos(data);
       setError(null);
     } catch (err) {
       console.error("Erreur de chargement:", err);
-      setError("Impossible de charger les donn�es.");
+      
+      if (err.message.includes('Rate limit')) {
+        console.warn("Rate limit atteint, nouvelle tentative dans 10s...");
+        setTimeout(fetchData, RETRY_DELAY);
+        return;
+      }
+      
+      setError("Impossible de charger les données.");
     } finally {
       setLoading(false);
     }
