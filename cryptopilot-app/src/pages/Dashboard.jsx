@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import WalletPortfolio from '../component/Porfolio/WalletPortfolio';
-import PortfolioStats from '../component/Porfolio/PortfolioStats';
-import CryptoList from '../component/Porfolio/CryptoList';
+import FinanceDashboard from '../component/Porfolio/FinanceDashboard';
 
 function Dashboard() {
   const { authMethod } = useAuth();
@@ -14,25 +12,15 @@ function Dashboard() {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-[#D4AF37] mb-2">Tableau de bord</h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            {authMethod === 'metamask' 
-              ? 'Gérez votre portfolio crypto avec MetaMask' 
+            {authMethod === 'metamask'
+              ? 'Gérez votre portfolio crypto avec MetaMask'
               : 'Bienvenue sur votre espace CryptoPilot'}
           </p>
         </div>
 
-        {/* Wallet MetaMask Portfolio - uniquement pour MetaMask */}
+        {/* Finance Dashboard - Only for MetaMask */}
         {authMethod === 'metamask' && (
-          <>
-            <div className="mb-6 sm:mb-8">
-              <WalletPortfolio />
-            </div>
-            
-            {/* Statistiques du Portfolio */}
-            <PortfolioStats />
-            
-            {/* Liste des Cryptomonnaies */}
-            <CryptoList />
-          </>
+          <FinanceDashboard />
         )}
       </div>
     </div>
