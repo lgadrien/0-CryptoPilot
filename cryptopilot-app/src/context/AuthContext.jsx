@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     return localStorage.getItem('walletAddress');
   });
   const [authMethod, setAuthMethod] = useState(() => {
-    return localStorage.getItem('authMethod') || 'traditional'; // 'traditional' or 'metamask'
+    return localStorage.getItem('authMethod') || 'traditional'; // 'traditional', 'metamask' or 'phantom'
   });
 
   // Sauvegarder dans le localStorage quand l'état change
@@ -54,6 +54,17 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const loginWithPhantom = useCallback((address) => {
+    setIsAuthenticated(true);
+    setWalletAddress(address);
+    setAuthMethod('phantom');
+    setUser({
+      address: address,
+      type: 'phantom',
+      connectedAt: new Date().toISOString(),
+    });
+  }, []);
+
   const logout = useCallback(() => {
     setIsAuthenticated(false);
     setUser(null);
@@ -73,8 +84,9 @@ export function AuthProvider({ children }) {
     authMethod,
     login,
     loginWithMetaMask,
+    loginWithPhantom,
     logout
-  }), [isAuthenticated, user, walletAddress, authMethod, login, loginWithMetaMask, logout]);
+  }), [isAuthenticated, user, walletAddress, authMethod, login, loginWithMetaMask, loginWithPhantom, logout]);
 
   return (
     <AuthContext.Provider value={value}>

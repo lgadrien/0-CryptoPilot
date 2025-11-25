@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
 import { useMetaMask } from '../../hooks/useMetaMask';
+import { usePhantom } from '../../hooks/usePhantom';
 import { User, LogOut, Menu, X, Home, LayoutDashboard, Bell, Wallet } from 'lucide-react';
 
 // Composant NavLink mémorisé
@@ -21,6 +22,7 @@ NavLink.displayName = 'NavLink';
 function Header() {
   const { isAuthenticated, user, logout, authMethod, walletAddress } = useAuth();
   const { formatAddress } = useMetaMask();
+  const { account: phantomAccount } = usePhantom();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
@@ -119,10 +121,12 @@ function Header() {
                   onClick={toggleUserMenu}
                   className="flex items-center gap-2 bg-[#D4AF37] text-[#0B0D12] px-4 py-2 rounded-lg font-semibold hover:bg-[#F5D76E] transition-all"
                 >
-                  {authMethod === 'metamask' ? <Wallet className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                  {(authMethod === 'metamask' || authMethod === 'phantom') ? <Wallet className="w-4 h-4" /> : <User className="w-4 h-4" />}
                   <span className="hidden lg:inline">
                     {authMethod === 'metamask' && walletAddress 
-                      ? formatAddress(walletAddress) 
+                      ? formatAddress(walletAddress)
+                      : authMethod === 'phantom' && walletAddress
+                      ? formatAddress(walletAddress)
                       : user?.username || 'Profil'}
                   </span>
                 </button>
@@ -136,6 +140,14 @@ function Header() {
                           <div className="flex items-center gap-2 mb-1">
                             <Wallet className="w-4 h-4 text-orange-500" />
                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">MetaMask</p>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatAddress(walletAddress)}</p>
+                        </>
+                      ) : authMethod === 'phantom' ? (
+                        <>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Wallet className="w-4 h-4 text-purple-500" />
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Phantom</p>
                           </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatAddress(walletAddress)}</p>
                         </>
@@ -217,8 +229,20 @@ function Header() {
               {isAuthenticated ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300">
-                    <User className="w-5 h-5 text-[#D4AF37]" />
-                    <span className="font-semibold">{user?.name || 'Utilisateur'}</span>
+                    {(authMethod === 'metamask' || authMethod === 'phantom') ? (
+                      <>
+                        <Wallet className={`w-5 h-5 ${authMethod === 'metamask' ? 'text-orange-500' : 'text-purple-500'}`} />
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-sm">{authMethod === 'metamask' ? 'MetaMask' : 'Phantom'}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{formatAddress(walletAddress)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-5 h-5 text-[#D4AF37]" />
+                        <span className="font-semibold">{user?.name || 'Utilisateur'}</span>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={handleLogout}

@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { Wallet, Copy, ExternalLink, RefreshCcw, TrendingUp, TrendingDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useMetaMask } from '../../hooks/useMetaMask';
+import { usePhantom } from '../../hooks/usePhantom';
 import cryptoService from '../../services/cryptoService';
 import { formatEther } from 'ethers';
 
@@ -10,7 +11,8 @@ import { formatEther } from 'ethers';
 function FinanceDashboard() {
   // Contexts
   const { authMethod, walletAddress, account, loginWithMetaMask } = useAuth();
-  const { getBalance, formatAddress, getNetworkName, chainId, provider } = useMetaMask();
+  const { getBalance, formatAddress, getNetworkName, chainId, provider, connectMetaMask, isConnecting: isConnectingMetaMask, error: metaMaskError, isMetaMaskInstalled } = useMetaMask();
+  const { account: phantomAccount } = usePhantom();
 
   // Wallet State
   const [wallet, setWallet] = useState({
@@ -156,6 +158,9 @@ function FinanceDashboard() {
       loadPortfolioData();
       loadCryptoData();
       loadPerformanceData();
+    } else if (authMethod === 'phantom' && walletAddress) {
+      // Pour Phantom, on charge uniquement les données de performance pour l'instant
+      loadPerformanceData();
     }
     // eslint-disable-next-line
   }, [authMethod, walletAddress, provider, account, loadPerformanceData]);
@@ -181,8 +186,8 @@ function FinanceDashboard() {
   };
 
 
-  // Si MetaMask n'est pas connecté, proposer le bouton de connexion
-  if (authMethod !== 'metamask' || !walletAddress) {
+  // Si aucun wallet n'est connecté, proposer le bouton de connexion
+  if ((authMethod !== 'metamask' && authMethod !== 'phantom') || !walletAddress) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <h2 className="text-xl font-bold text-[#D4AF37] mb-4">Connecte ton wallet MetaMask</h2>
@@ -224,12 +229,16 @@ function FinanceDashboard() {
       <section aria-label="Wallet Portfolio" className="bg-white dark:bg-[#1C1F26] rounded-2xl shadow-xl p-6 transition-colors duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${authMethod === 'metamask' ? 'bg-gradient-to-br from-orange-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-purple-600'}`}>
               <Wallet className="w-6 h-6 text-white" aria-label="Wallet Icon" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Wallet MetaMask</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{chainId && getNetworkName(chainId)}</p>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                {authMethod === 'metamask' ? 'Wallet MetaMask' : 'Wallet Phantom'}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {authMethod === 'metamask' && chainId ? getNetworkName(chainId) : authMethod === 'phantom' ? 'Solana Network' : ''}
+              </p>
             </div>
           </div>
           <button

@@ -14,12 +14,14 @@ function Dashboard() {
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {authMethod === 'metamask'
               ? 'Gérez votre portfolio crypto avec MetaMask'
+              : authMethod === 'phantom'
+              ? 'Gérez votre portfolio Solana avec Phantom'
               : 'Bienvenue sur votre espace CryptoPilot'}
           </p>
         </div>
 
-        {/* Finance Dashboard - Only for MetaMask */}
-        {authMethod === 'metamask' && (
+        {/* Finance Dashboard - For MetaMask and Phantom */}
+        {(authMethod === 'metamask' || authMethod === 'phantom') && (
           <FinanceDashboard />
         )}
       </div>

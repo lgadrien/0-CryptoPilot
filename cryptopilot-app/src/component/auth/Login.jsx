@@ -3,12 +3,14 @@ import { useState, useCallback } from 'react';
 import { Eye, EyeOff, Wallet } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useMetaMask } from '../../hooks/useMetaMask';
+import { usePhantom } from '../../hooks/usePhantom';
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login, loginWithMetaMask } = useAuth();
-  const { connectMetaMask, isConnecting, error: metaMaskError, isMetaMaskInstalled } = useMetaMask();
+  const { login, loginWithMetaMask, loginWithPhantom } = useAuth();
+  const { connectMetaMask, isConnecting: isConnectingMetaMask, error: metaMaskError, isMetaMaskInstalled } = useMetaMask();
+  const { connectPhantom, isConnecting: isConnectingPhantom, error: phantomError, isPhantomInstalled } = usePhantom();
 
   const togglePassword = useCallback(() => {
     setShowPassword(prev => !prev);
@@ -18,6 +20,14 @@ function Login() {
     const result = await connectMetaMask();
     if (result) {
       loginWithMetaMask(result.account, result.chainId);
+      navigate('/dashboard');
+    }
+  };
+
+  const handlePhantomLogin = async () => {
+    const result = await connectPhantom();
+    if (result) {
+      loginWithPhantom(result.account);
       navigate('/dashboard');
     }
   };
@@ -39,15 +49,15 @@ function Login() {
         </div>
 
         {/* Bouton MetaMask */}
-        <div className="mb-6">
+        <div className="mb-4">
           {isMetaMaskInstalled ? (
             <button
               onClick={handleMetaMaskLogin}
-              disabled={isConnecting}
+              disabled={isConnectingMetaMask}
               className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-xl text-sm sm:text-base font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Wallet className="w-5 h-5" />
-              {isConnecting ? 'Connexion...' : 'Se connecter avec MetaMask'}
+              {isConnectingMetaMask ? 'Connexion...' : 'Se connecter avec MetaMask'}
             </button>
           ) : (
             <a
@@ -63,6 +73,35 @@ function Login() {
           {metaMaskError && (
             <p className="mt-2 text-sm text-red-500 dark:text-red-400 text-center">
               {metaMaskError}
+            </p>
+          )}
+        </div>
+
+        {/* Bouton Phantom */}
+        <div className="mb-6">
+          {isPhantomInstalled ? (
+            <button
+              onClick={handlePhantomLogin}
+              disabled={isConnectingPhantom}
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-3 rounded-xl text-sm sm:text-base font-semibold hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Wallet className="w-5 h-5" />
+              {isConnectingPhantom ? 'Connexion...' : 'Se connecter avec Phantom'}
+            </button>
+          ) : (
+            <a
+              href="https://phantom.app/download"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white px-8 py-3 rounded-xl text-sm sm:text-base font-semibold hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg flex items-center justify-center gap-3"
+            >
+              <Wallet className="w-5 h-5" />
+              Installer Phantom
+            </a>
+          )}
+          {phantomError && (
+            <p className="mt-2 text-sm text-red-500 dark:text-red-400 text-center">
+              {phantomError}
             </p>
           )}
         </div>
