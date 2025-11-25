@@ -1,5 +1,5 @@
-
 import { useEffect, useState, useCallback } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Wallet, Copy, ExternalLink, RefreshCcw, TrendingUp, TrendingDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useMetaMask } from '../../hooks/useMetaMask';
@@ -31,9 +31,35 @@ function FinanceDashboard() {
     loading: true,
   });
 
+
   // Crypto List State
   const [cryptos, setCryptos] = useState([]);
   const [loadingCryptos, setLoadingCryptos] = useState(true);
+
+  // Performance Chart State
+  const [performanceData, setPerformanceData] = useState([]);
+  const [loadingChart, setLoadingChart] = useState(true);
+  // Load Performance Chart Data (ETH price history)
+  const loadPerformanceData = useCallback(async () => {
+    setLoadingChart(true);
+    try {
+      // Appel direct à l'API CoinGecko (pas besoin de service externe)
+      const res = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=7');
+      const data = await res.json();
+      // data.prices = [[timestamp, price], ...]
+      const chartData = data.prices.map(([timestamp, price]) => {
+        const date = new Date(timestamp);
+        return {
+          date: `${date.getDate()}/${date.getMonth()+1}`,
+          price: price,
+        };
+      });
+      setPerformanceData(chartData);
+    } catch {
+      setPerformanceData([]);
+    }
+    setLoadingChart(false);
+  }, []);
 
 
   // Load Wallet Balance
@@ -129,9 +155,10 @@ function FinanceDashboard() {
       loadBalance();
       loadPortfolioData();
       loadCryptoData();
+      loadPerformanceData();
     }
     // eslint-disable-next-line
-  }, [authMethod, walletAddress, provider, account]);
+  }, [authMethod, walletAddress, provider, account, loadPerformanceData]);
 
 
   // Copy wallet address
@@ -299,6 +326,29 @@ function FinanceDashboard() {
             </>
           )}
         </div>
+      </section>
+
+
+      {/* Performance Chart */}
+      <section aria-label="Performance du wallet" className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300 mb-8">
+        <h3 className="text-lg sm:text-xl font-bold text-[#D4AF37] mb-4">Performance du wallet (ETH/USD sur 7 jours)</h3>
+        {loadingChart ? (
+          <div className="h-48 flex items-center justify-center">
+            <div className="animate-pulse h-8 w-32 bg-gray-300 dark:bg-gray-700 rounded" />
+          </div>
+        ) : performanceData.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">Aucune donnée de performance disponible</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={performanceData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fill: '#D4AF37', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#D4AF37', fontSize: 12 }} domain={['auto', 'auto']} />
+              <Tooltip formatter={(value) => `$${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} labelStyle={{ color: '#D4AF37' }} />
+              <Line type="monotone" dataKey="price" stroke="#D4AF37" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </section>
 
       {/* Crypto List */}
