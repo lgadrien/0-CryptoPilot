@@ -58,6 +58,20 @@ export function usePhantom() {
   useEffect(() => {
     if (!isPhantomInstalled()) return;
 
+    // Réinitialiser l'account si Phantom est déjà connecté
+    const initAccount = async () => {
+      try {
+        if (window.solana.isConnected) {
+          const publicKey = window.solana.publicKey.toString();
+          setAccount(publicKey);
+        }
+      } catch (err) {
+        console.error('Erreur d\'initialisation de Phantom:', err);
+      }
+    };
+
+    initAccount();
+
     const handleAccountChanged = (publicKey) => {
       if (publicKey) {
         setAccount(publicKey.toString());

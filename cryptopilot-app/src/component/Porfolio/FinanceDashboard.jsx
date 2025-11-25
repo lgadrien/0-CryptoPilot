@@ -43,6 +43,12 @@ function FinanceDashboard() {
   const [loadingChart, setLoadingChart] = useState(true);
   // Load Performance Chart Data (ETH price history)
   const loadPerformanceData = useCallback(async () => {
+    // Désactiver temporairement pour éviter les erreurs CORS
+    setLoadingChart(false);
+    setPerformanceData([]);
+    return;
+    
+    /* Code désactivé temporairement - erreur CORS 429
     setLoadingChart(true);
     try {
       // Appel direct à l'API CoinGecko (pas besoin de service externe)
@@ -61,15 +67,17 @@ function FinanceDashboard() {
       setPerformanceData([]);
     }
     setLoadingChart(false);
+    */
   }, []);
 
 
   // Load Wallet Balance
   const loadBalance = useCallback(async () => {
-    if (account && provider) {
+    const address = walletAddress || account;
+    if (address && provider) {
       setWallet((prev) => ({ ...prev, isLoading: true }));
       try {
-        const bal = await getBalance(account);
+        const bal = await getBalance(address);
         const ethAmount = parseFloat(formatEther(bal));
         let usd = null, priceChange24h = null;
         try {
@@ -87,11 +95,12 @@ function FinanceDashboard() {
           isLoading: false,
           copied: false,
         });
-      } catch {
+      } catch (err) {
+        console.error('Erreur de chargement du solde:', err);
         setWallet((prev) => ({ ...prev, balance: null, isLoading: false }));
       }
     }
-  }, [account, provider, getBalance]);
+  }, [walletAddress, account, provider, getBalance]);
 
 
   // Load Portfolio Stats
@@ -153,17 +162,23 @@ function FinanceDashboard() {
 
   // Initial load
   useEffect(() => {
+    console.log('FinanceDashboard - authMethod:', authMethod);
+    console.log('FinanceDashboard - walletAddress:', walletAddress);
+    console.log('FinanceDashboard - provider:', provider);
+    console.log('FinanceDashboard - account:', account);
+    
     if (authMethod === 'metamask' && walletAddress && provider) {
+      console.log('Chargement des données MetaMask...');
       loadBalance();
       loadPortfolioData();
       loadCryptoData();
       loadPerformanceData();
     } else if (authMethod === 'phantom' && walletAddress) {
-      // Pour Phantom, on charge uniquement les données de performance pour l'instant
-      loadPerformanceData();
+      // Pour Phantom, données limitées pour le moment
+      console.log('Chargement des données Phantom...');
+      // Pas de chargement de données - Phantom/Solana nécessite d'autres APIs
     }
-    // eslint-disable-next-line
-  }, [authMethod, walletAddress, provider, account, loadPerformanceData]);
+  }, [authMethod, walletAddress, provider, loadBalance, loadPortfolioData, loadCryptoData, loadPerformanceData]);
 
 
   // Copy wallet address
@@ -225,7 +240,8 @@ function FinanceDashboard() {
   // --- UI ---
   return (
     <div className="space-y-8">
-      {/* Wallet Portfolio */}
+      {/* Wallet Portfolio Card - Universal */}
+      {walletAddress && (
       <section aria-label="Wallet Portfolio" className="bg-white dark:bg-[#1C1F26] rounded-2xl shadow-xl p-6 transition-colors duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -234,22 +250,24 @@ function FinanceDashboard() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                {authMethod === 'metamask' ? 'Wallet MetaMask' : 'Wallet Phantom'}
+                {authMethod === 'metamask' ? 'Wallet MetaMask' : authMethod === 'phantom' ? 'Wallet Phantom' : 'Mon Wallet'}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {authMethod === 'metamask' && chainId ? getNetworkName(chainId) : authMethod === 'phantom' ? 'Solana Network' : ''}
               </p>
             </div>
           </div>
+          {authMethod === 'metamask' && (
           <button
             onClick={loadBalance}
-            disabled={wallet.isLoading}
+            disabled={portfolio.loading}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors disabled:opacity-50"
             title="Rafraîchir le solde"
             aria-label="Refresh Balance"
           >
-            <RefreshCcw className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${wallet.isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCcw className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${portfolio.loading ? 'animate-spin' : ''}`} />
           </button>
+          )}
         </div>
         <div className="mb-6">
           <div className="flex items-center gap-2">
@@ -262,6 +280,7 @@ function FinanceDashboard() {
             >
               <Copy className={`w-4 h-4 ${wallet.copied ? 'text-green-500' : 'text-gray-400'}`} />
             </button>
+            {authMethod === 'metamask' && (
             <button
               onClick={openInExplorer}
               className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
@@ -270,30 +289,53 @@ function FinanceDashboard() {
             >
               <ExternalLink className="w-4 h-4 text-gray-400" />
             </button>
+            )}
+            {authMethod === 'phantom' && (
+            <button
+              onClick={() => window.open(`https://solscan.io/account/${walletAddress}`, '_blank', 'noopener,noreferrer')}
+              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+              title="Voir sur Solscan"
+              aria-label="Voir sur Solscan"
+            >
+              <ExternalLink className="w-4 h-4 text-gray-400" />
+            </button>
+            )}
           </div>
         </div>
         <div>
-          {wallet.isLoading ? (
+          {authMethod === 'phantom' ? (
+            <div>
+              <p className="text-3xl font-bold text-[#D4AF37]">$0.00</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Valeur totale du portfolio</p>
+              <p className="text-xs mt-2 text-gray-500 dark:text-gray-400">🚧 Intégration Solana en cours</p>
+            </div>
+          ) : portfolio.loading ? (
             <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-32 animate-pulse" />
           ) : (
             <div>
-              <p className="text-2xl font-bold text-[#D4AF37]">{wallet.balance ? parseFloat(formatEther(wallet.balance)).toFixed(4) : '0.0000'} ETH</p>
-              <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">≈ ${wallet.usd ? wallet.usd.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</p>
-              {wallet.priceChange24h !== null && (
-                <p className={`text-xs mt-2 ${wallet.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>{wallet.priceChange24h >= 0 ? '+' : ''}{wallet.priceChange24h.toFixed(2)}% (24h)</p>
+              <p className="text-3xl font-bold text-[#D4AF37]">${portfolio.totalValue.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Valeur totale du portfolio</p>
+              {portfolio.change24hPercent !== null && (
+                <p className={`text-sm mt-2 flex items-center gap-1 ${portfolio.change24hPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {portfolio.change24hPercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  {portfolio.change24hPercent >= 0 ? '+' : ''}{portfolio.change24hPercent.toFixed(2)}% (24h)
+                </p>
               )}
             </div>
           )}
         </div>
       </section>
+      )}
 
-
-      {/* Portfolio Stats */}
+      {/* Portfolio Stats - Universal */}
+      {walletAddress && (
       <section aria-label="Portfolio Stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Total Value */}
         <div className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300">
           <h3 className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">Portfolio Total</h3>
-          {portfolio.loading ? (
+          {authMethod === 'phantom' ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">En cours...</p>
+          ) : portfolio.loading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-32 mb-2" />
               <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20" />
@@ -307,8 +349,10 @@ function FinanceDashboard() {
         </div>
         {/* ETH Balance */}
         <div className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300">
-          <h3 className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">Solde ETH</h3>
-          {portfolio.loading ? (
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">{authMethod === 'phantom' ? 'Solde SOL' : 'Solde ETH'}</h3>
+          {authMethod === 'phantom' ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">En cours...</p>
+          ) : portfolio.loading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-32 mb-2" />
               <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20" />
@@ -323,7 +367,9 @@ function FinanceDashboard() {
         {/* 24h Change */}
         <div className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300">
           <h3 className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">Gain/Perte 24h</h3>
-          {portfolio.loading ? (
+          {authMethod === 'phantom' ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">En cours...</p>
+          ) : portfolio.loading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-32 mb-2" />
               <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20" />
@@ -336,12 +382,23 @@ function FinanceDashboard() {
           )}
         </div>
       </section>
+      )}
 
-
-      {/* Performance Chart */}
+      {/* Performance Chart - Universal */}
+      {walletAddress && (
       <section aria-label="Performance du wallet" className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300 mb-8">
-        <h3 className="text-lg sm:text-xl font-bold text-[#D4AF37] mb-4">Performance du wallet (ETH/USD sur 7 jours)</h3>
-        {loadingChart ? (
+        <h3 className="text-lg sm:text-xl font-bold text-[#D4AF37] mb-4">
+          {authMethod === 'phantom' ? 'Performance du wallet (SOL/USD sur 7 jours)' : 'Performance du wallet (ETH/USD sur 7 jours)'}
+        </h3>
+        {authMethod === 'phantom' ? (
+          <div className="h-48 flex items-center justify-center">
+            <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-sm text-purple-800 dark:text-purple-300 text-center">
+                📊 Graphique de performance Solana en cours de développement
+              </p>
+            </div>
+          </div>
+        ) : loadingChart ? (
           <div className="h-48 flex items-center justify-center">
             <div className="animate-pulse h-8 w-32 bg-gray-300 dark:bg-gray-700 rounded" />
           </div>
@@ -359,11 +416,19 @@ function FinanceDashboard() {
           </ResponsiveContainer>
         )}
       </section>
+      )}
 
-      {/* Crypto List */}
+      {/* Crypto List - Universal */}
+      {walletAddress && (
       <section aria-label="Crypto List" className="bg-white dark:bg-[#1C1F26] rounded-xl p-5 sm:p-6 border border-gray-200 dark:border-[#2A2D35] transition-colors duration-300">
-        <h3 className="text-lg sm:text-xl font-bold text-[#D4AF37] mb-4">Mes Cryptomonnaies</h3>
-        {loadingCryptos ? (
+        <h3 className="text-lg sm:text-xl font-bold text-[#D4AF37] mb-4">{authMethod === 'phantom' ? 'Mes Tokens Solana' : 'Mes Cryptomonnaies'}</h3>
+        {authMethod === 'phantom' ? (
+          <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+            <p className="text-sm text-purple-800 dark:text-purple-300">
+              🚧 Liste des tokens SPL Solana en cours de développement
+            </p>
+          </div>
+        ) : loadingCryptos ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse flex justify-between items-center p-4 bg-gray-50 dark:bg-[#0B0D12] rounded-lg">
@@ -408,11 +473,13 @@ function FinanceDashboard() {
               </div>
             ))}
           </div>
+
         )}
       </section>
+    )}
 
-    </div>
-  );
+  </div>
+);
 }
 
 export default FinanceDashboard;

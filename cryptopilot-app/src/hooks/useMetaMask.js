@@ -69,11 +69,34 @@ export function useMetaMask() {
   useEffect(() => {
     if (!isMetaMaskInstalled()) return;
 
+    // Réinitialiser le provider si MetaMask est disponible mais pas encore connecté
+    const initProvider = async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          const account = accounts[0];
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          const provider = new BrowserProvider(window.ethereum);
+          
+          setAccount(account);
+          setChainId(chainId);
+          setProvider(provider);
+        }
+      } catch (err) {
+        console.error('Erreur d\'initialisation du provider:', err);
+      }
+    };
+
+    initProvider();
+
     const handleAccountsChanged = (accounts) => {
       if (accounts.length === 0) {
         disconnect();
       } else if (accounts[0] !== account) {
         setAccount(accounts[0]);
+        // Recréer le provider lors du changement de compte
+        const newProvider = new BrowserProvider(window.ethereum);
+        setProvider(newProvider);
       }
     };
 
