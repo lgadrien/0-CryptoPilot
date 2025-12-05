@@ -11,28 +11,36 @@
  *   node seed_users.js 10           # Seeds 10 users
  *   node seed_users.js 50           # Seeds 50 users
  * 
- * ENVIRONMENT VARIABLES:
- *   DB_HOST=localhost (default)
- *   DB_PORT=5432 (default)
- *   DB_USER=useradmin (default)
- *   DB_PASSWORD=admin123 (default)
- *   DB_NAME=cryptopilot_db (default)
+ * ENVIRONMENT VARIABLES (or use .env file):
+ *   SEED_DB_HOST=localhost
+ *   SEED_DB_PORT=5432
+ *   SEED_DB_USER=useradmin
+ *   SEED_DB_PASSWORD=admin123
+ *   SEED_DB_NAME=cryptopilot_db
+ *   SEED_PASSWORD_HASH=$2b$10$abcdefghijklmnopqrstuvwxyz (bcrypt hash for test)
+ *   SEED_DEFAULT_COUNT=5
  */
 
 const { Pool } = require('pg');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Configuration
-const numberOfUsers = parseInt(process.argv[2]) || 5;
+const numberOfUsers = parseInt(process.argv[2]) || parseInt(process.env.SEED_DEFAULT_COUNT) || 5;
 
 // Database connection pool
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'useradmin',
-  password: process.env.DB_PASSWORD || 'admin123',
-  database: process.env.DB_NAME || 'cryptopilot_db',
+  host: process.env.SEED_DB_HOST || 'localhost',
+  port: parseInt(process.env.SEED_DB_PORT) || 5432,
+  user: process.env.SEED_DB_USER || 'useradmin',
+  password: process.env.SEED_DB_PASSWORD || 'admin123',
+  database: process.env.SEED_DB_NAME || 'cryptopilot_db',
 });
+
+// Password hash for seeded users
+const seedPasswordHash = process.env.SEED_PASSWORD_HASH || '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36XQk';
 
 // Sample wallet addresses (Ethereum mainnet token contracts)
 const walletAddresses = [
@@ -59,20 +67,19 @@ const bioExamples = [
 
 // Generate fake but realistic data
 function generateUser(index) {
-  const randomNum = Math.random().toString(36).substring(7);
   const walletIndex = index % walletAddresses.length;
   const walletTypeIndex = index % walletTypes.length;
   
   return {
     email: `user_${index}@cryptopilot.test`,
     username: `crypto_trader_${String(index).padStart(3, '0')}`,
-    password: '$2b$10$' + crypto.randomBytes(31).toString('base64'), // Fake bcrypt hash
+    password: seedPasswordHash, // Use consistent hash from .env
     wallet_address: walletAddresses[walletIndex],
     wallet_type: walletTypes[walletTypeIndex],
-    phone_number: null, // Random phones or null
-    status: index % 20 === 0 ? 'suspended' : 'active', // 1 suspended per 20 users
-    is_2fa_enabled: index % 3 === 0, // 1 in 3 users has 2FA enabled
-    email_verified_at: index % 4 === 0 ? null : 'NOW()', // 75% verified
+    phone_number: null,
+    status: index % 20 === 0 ? 'suspended' : 'active',
+    is_2fa_enabled: index % 3 === 0,
+    email_verified_at: index % 4 === 0 ? null : 'NOW()',
     bio: bioExamples[index % bioExamples.length],
     last_login: index % 2 === 0 ? 'NOW()' : "NOW() - INTERVAL '" + (index % 30) + " days'",
   };

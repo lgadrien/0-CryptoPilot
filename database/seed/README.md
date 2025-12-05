@@ -11,14 +11,29 @@ Ce dossier contient les scripts pour seeder (remplir) la base de données avec d
 
 ## 🚀 Utilisation
 
-### Option 1: Script Node.js (Recommandé)
+### Option 1: Script SQL via Docker (Recommandé sur Windows)
 
-Le script Node.js te permet de spécifier le nombre d'utilisateurs à créer.
+La manière la plus fiable d'utiliser le seed SQL:
+
+```bash
+# Exécuter seed_users.sql
+docker exec cryptopilot_db_postgres psql -U useradmin -d cryptopilot_db -f /tmp/seed_users.sql
+```
+
+Ou avec le script:
+```bash
+# Depuis le répertoire database
+docker cp seed/seed_users.sql cryptopilot_db_postgres:/tmp/
+docker exec cryptopilot_db_postgres psql -U useradmin -d cryptopilot_db -f /tmp/seed_users.sql
+```
+
+### Option 2: Script Node.js (Linux/Mac)
+
+Le script Node.js fonctionne mieux sur Linux/Mac:
 
 **Installation des dépendances:**
 ```bash
-cd ../..  # Aller à la racine du projet
-npm install pg  # ou yarn add pg
+npm install pg dotenv
 ```
 
 **Utilisation:**
@@ -31,31 +46,15 @@ node database/seed/seed_users.js 10
 
 # Seed 50 utilisateurs
 node database/seed/seed_users.js 50
-
-# Seed 100 utilisateurs
-node database/seed/seed_users.js 100
 ```
 
-**Variables d'environnement (optionnelles):**
-```bash
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=useradmin
-DB_PASSWORD=admin123
-DB_NAME=cryptopilot_db
-```
+### Option 3: Script SQL classique via Adminer
 
-### Option 2: Script SQL classique
-
-**Depuis le terminal:**
-```bash
-psql -h localhost -U useradmin -d cryptopilot_db -f database/seed/seed_users.sql
-```
-
-**Depuis Adminer:**
-1. Va dans l'onglet "SQL command"
-2. Copie/colle le contenu de `seed_users.sql`
-3. Exécute
+1. Va sur http://localhost:8080
+2. Connecte-toi (useradmin / admin123 / cryptopilot_db)
+3. Clique sur "SQL command"
+4. Copie/colle le contenu de `seed_users.sql`
+5. Exécute
 
 ## 📊 Données générées
 
