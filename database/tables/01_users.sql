@@ -9,23 +9,23 @@ CREATE TABLE IF NOT EXISTS users (
   -- Colonne password : chaîne de max 255 caractères pour stocker le mot de passe hashé, obligatoire
   password VARCHAR(255) NOT NULL,
   
-  -- Colonne email_verified_at : timestamp de vérification de l'email
+  -- Colonne email_verified_at : timestamp de vérification de l'email (NULL = non vérifié)
   email_verified_at TIMESTAMP,
   
-  -- Colonne phone_number : numéro de téléphone pour l'authentification 2FA
-  phone_number VARCHAR(20),
+  -- Colonne phone_number : numéro de téléphone pour l'authentification 2FA (format international)
+  phone_number CHAR(20),
   
   -- Colonne status : statut du compte (active, suspended, deleted)
-  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'deleted')),
+  status CHAR(10) DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'deleted')),
   
   -- Colonne ip_address_last_login : adresse IP de la dernière connexion (IPv4 ou IPv6)
-  ip_address_last_login VARCHAR(45),
+  ip_address_last_login INET,
   
   -- Colonne device_info : informations du device/navigateur du dernier login
   device_info VARCHAR(255),
   
-  -- Colonne failed_login_attempts : nombre de tentatives de connexion échouées
-  failed_login_attempts INT DEFAULT 0,
+  -- Colonne failed_login_attempts : nombre de tentatives de connexion échouées (>=0)
+  failed_login_attempts SMALLINT DEFAULT 0 CHECK (failed_login_attempts >= 0),
   
   -- Colonne username : chaîne de max 100 caractères pour le nom d'utilisateur, unique et obligatoire
   username VARCHAR(100) UNIQUE NOT NULL,
@@ -34,13 +34,7 @@ CREATE TABLE IF NOT EXISTS users (
   wallet_address VARCHAR(255) UNIQUE,
   
   -- Colonne wallet_type : type de portefeuille (metamask, phantom, etc.)
-  wallet_type VARCHAR(50),
-  
-  -- Colonne is_verified : indique si l'utilisateur a vérifié son email (true/false)
-  is_verified BOOLEAN DEFAULT FALSE,
-  
-  -- Colonne verification_token : token pour vérifier l'email
-  verification_token VARCHAR(255),
+  wallet_type CHAR(20),
   
   -- Colonne is_2fa_enabled : indique si l'authentification à 2 facteurs est activée
   is_2fa_enabled BOOLEAN DEFAULT FALSE,
@@ -70,8 +64,8 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 -- Créer un index sur la colonne wallet_address pour accélérer les recherches par adresse portefeuille
 CREATE INDEX IF NOT EXISTS idx_users_wallet_address ON users(wallet_address);
 
--- Créer un index sur la colonne is_verified pour les requêtes de filtrage
-CREATE INDEX IF NOT EXISTS idx_users_is_verified ON users(is_verified);
+-- Créer un index sur email_verified_at pour les requêtes de filtrage (utilisateurs vérifiés)
+CREATE INDEX IF NOT EXISTS idx_users_email_verified_at ON users(email_verified_at);
 
 -- Créer un index sur created_at pour les requêtes chronologiques
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
@@ -92,8 +86,6 @@ COMMENT ON COLUMN users.failed_login_attempts IS 'Compteur de tentatives de conn
 COMMENT ON COLUMN users.username IS 'Nom d''utilisateur unique et public';
 COMMENT ON COLUMN users.wallet_address IS 'Adresse du portefeuille crypto (MetaMask/Phantom)';
 COMMENT ON COLUMN users.wallet_type IS 'Type de portefeuille utilisé (metamask, phantom, etc.)';
-COMMENT ON COLUMN users.is_verified IS 'Statut de vérification de l''email';
-COMMENT ON COLUMN users.verification_token IS 'Token JWT pour vérifier l''email';
 COMMENT ON COLUMN users.is_2fa_enabled IS 'Authentification à 2 facteurs activée';
 COMMENT ON COLUMN users.bio IS 'Biographie courte de l''utilisateur';
 COMMENT ON COLUMN users.profile_picture_url IS 'URL de la photo de profil stockée';
