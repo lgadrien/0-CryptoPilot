@@ -1,3 +1,4 @@
+name : cryptopilot
 services:
   # PostgreSQL Database
   db:
