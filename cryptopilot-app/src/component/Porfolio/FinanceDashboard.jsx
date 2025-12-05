@@ -107,7 +107,13 @@ function FinanceDashboard() {
   const loadPortfolioData = useCallback(async () => {
     try {
       setPortfolio((prev) => ({ ...prev, loading: true }));
-      const balance = await getBalance();
+      // Utiliser l'adresse du wallet et le provider
+      const address = walletAddress || account;
+      if (!address || !provider) {
+        setPortfolio((prev) => ({ ...prev, loading: false }));
+        return;
+      }
+      const balance = await getBalance(address);
       const ethBalance = formatEther(balance);
       const priceData = await cryptoService.getPrice('ethereum');
       const ethValue = parseFloat(ethBalance) * priceData.price;
@@ -123,7 +129,7 @@ function FinanceDashboard() {
     } catch {
       setPortfolio((prev) => ({ ...prev, loading: false }));
     }
-  }, [getBalance]);
+  }, [getBalance, walletAddress, account, provider]);
 
 
   // Load Crypto List
