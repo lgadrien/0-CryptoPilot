@@ -106,144 +106,146 @@ function Header() {
           </Link>
         </div>
 
-        {/* CENTER: Desktop Navigation (Pushed to Right via ml-auto) */}
-        <nav className="hidden md:flex items-center gap-8 ml-auto mr-8">
-          {/* Navigation is contextual: If guest, show Home/Pricing. If Auth, show Dashboard/Pricing */}
-          {!isAuthenticated ? (
-            <>
-              <NavLink
-                to="/"
-                className="text-gray-600 dark:text-gray-300 font-medium hover:text-[#D4AF37] transition-colors"
-              >
-                Home
-              </NavLink>
-              <NavLink
-                to="/pricing"
-                className="text-gray-600 dark:text-gray-300 font-medium hover:text-[#D4AF37] transition-colors"
-              >
-                Tarifs
-              </NavLink>
-            </>
-          ) : (
-            <>
-              <NavLink
-                to="/dashboard"
-                icon={LayoutDashboard}
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 font-semibold hover:text-[#D4AF37] transition-colors"
-              >
-                Dashboard
-              </NavLink>
-              <NavLink
-                to="/pricing"
-                className="text-gray-500 dark:text-gray-400 font-medium hover:text-[#D4AF37] transition-colors"
-              >
-                💎 Offres
-              </NavLink>
-            </>
-          )}
-        </nav>
-
-        {/* RIGHT: Actions */}
-        <div className="hidden md:flex items-center gap-4">
-          <ThemeToggle />
-
-          {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              {/* Notification Badge */}
-              <button className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
-                <Bell className="w-5 h-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                )}
-              </button>
-
-              <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
-
-              {/* User Menu */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={toggleUserMenu}
-                  className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full border border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] transition-all bg-gray-50 dark:bg-[#15171C]"
+        {/* RIGHT GROUP: Desktop Navigation + Actions */}
+        <div className="hidden md:flex items-center gap-8">
+          <nav className="flex items-center gap-6">
+            {!isAuthenticated ? (
+              <>
+                <NavLink
+                  to="/"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F5D76E] flex items-center justify-center text-white shadow-sm">
-                    {authMethod === "metamask" || authMethod === "phantom" ? (
-                      <Wallet className="w-4 h-4" />
-                    ) : (
-                      <User className="w-4 h-4" />
-                    )}
-                  </div>
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 max-w-[100px] truncate mr-2">
-                    {authMethod === "metamask" && walletAddress
-                      ? formatAddress(walletAddress)
-                      : authMethod === "phantom" && walletAddress
-                      ? formatAddress(walletAddress)
-                      : user?.username || user?.full_name || "Profil"}
-                  </span>
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/pricing"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Tarifs
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/dashboard"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to="/pricing"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Offres
+                </NavLink>
+              </>
+            )}
+          </nav>
+
+          <div className="h-6 w-px bg-gray-200 dark:bg-gray-800"></div>
+
+          {/* ACTIONS */}
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                {/* Notification Badge */}
+                <button className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
+                  <Bell className="w-5 h-5" />
+                  {notificationCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  )}
                 </button>
 
-                {/* Dropdown Menu */}
-                {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#1C1F26] rounded-xl shadow-2xl border border-gray-100 dark:border-[#2A2D35] overflow-hidden animate-slide-down origin-top-right">
-                    <div className="p-4 border-b border-gray-100 dark:border-[#2A2D35] bg-gray-50/50 dark:bg-[#15171C]/50">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                        Connecté via{" "}
-                        {authMethod === "traditional" ? "Email" : authMethod}
-                      </p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {user?.email || walletAddress}
-                      </p>
-                    </div>
+                <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 mx-1"></div>
 
-                    <div className="p-1">
-                      <NavLink
-                        to="/dashboard"
-                        onClick={toggleUserMenu}
-                        icon={LayoutDashboard}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
-                      >
-                        Mon Dashboard
-                      </NavLink>
-                      <NavLink
-                        to="/pricing"
-                        onClick={toggleUserMenu}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
-                      >
-                        <span className="w-5 h-5 flex items-center justify-center">
-                          💎
-                        </span>
-                        Gérer mon offre
-                      </NavLink>
+                {/* User Menu */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={toggleUserMenu}
+                    className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full border border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] transition-all bg-gray-50 dark:bg-[#15171C]"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F5D76E] flex items-center justify-center text-white shadow-sm">
+                      {authMethod === "metamask" || authMethod === "phantom" ? (
+                        <Wallet className="w-4 h-4" />
+                      ) : (
+                        <User className="w-4 h-4" />
+                      )}
                     </div>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 max-w-[100px] truncate mr-2">
+                      {authMethod === "metamask" && walletAddress
+                        ? formatAddress(walletAddress)
+                        : authMethod === "phantom" && walletAddress
+                        ? formatAddress(walletAddress)
+                        : user?.username || user?.full_name || "Profil"}
+                    </span>
+                  </button>
 
-                    <div className="p-1 border-t border-gray-100 dark:border-[#2A2D35]">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Se déconnecter
-                      </button>
+                  {/* Dropdown Menu */}
+                  {showUserMenu && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#1C1F26] rounded-xl shadow-2xl border border-gray-100 dark:border-[#2A2D35] overflow-hidden animate-slide-down origin-top-right">
+                      <div className="p-4 border-b border-gray-100 dark:border-[#2A2D35] bg-gray-50/50 dark:bg-[#15171C]/50">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                          Connecté via{" "}
+                          {authMethod === "traditional" ? "Email" : authMethod}
+                        </p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {user?.email || walletAddress}
+                        </p>
+                      </div>
+
+                      <div className="p-1">
+                        <NavLink
+                          to="/dashboard"
+                          onClick={toggleUserMenu}
+                          icon={LayoutDashboard}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                        >
+                          Mon Dashboard
+                        </NavLink>
+                        <NavLink
+                          to="/pricing"
+                          onClick={toggleUserMenu}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                        >
+                          <span className="w-5 h-5 flex items-center justify-center">
+                            💎
+                          </span>
+                          Gérer mon offre
+                        </NavLink>
+                      </div>
+
+                      <div className="p-1 border-t border-gray-100 dark:border-[#2A2D35]">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Se déconnecter
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                className="text-gray-600 dark:text-gray-300 font-semibold hover:text-[#D4AF37] px-3 py-2 transition-colors"
-              >
-                Connexion
-              </Link>
-              <Link
-                href="/register"
-                className="bg-[#D4AF37] text-[#0B0D12] px-5 py-2.5 rounded-lg font-bold hover:bg-[#F5D76E] shadow-lg shadow-[#D4AF37]/20 transition-all transform hover:-translate-y-0.5"
-              >
-                Démarrer
-              </Link>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="text-gray-600 dark:text-gray-300 font-semibold hover:text-[#D4AF37] px-3 py-2 transition-colors"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-[#D4AF37] text-[#0B0D12] px-5 py-2.5 rounded-lg font-bold hover:bg-[#F5D76E] shadow-lg shadow-[#D4AF37]/20 transition-all transform hover:-translate-y-0.5"
+                >
+                  Démarrer
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile Right Side */}
