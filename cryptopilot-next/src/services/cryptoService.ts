@@ -106,29 +106,9 @@ class CryptoService {
     }
   }
 
-  // Récupérer le top des cryptomonnaies/Marché (remplace la logique complexe avec l'API interne)
-  async getTopCryptos(limit = 20) {
-    // NOTE: L'endpoint market-data prend 'ids' pour l'instant.
-    // Pour simuler "getTopCryptos" avec l'endpoint générique, il faudrait idéalement passer une liste d'ids
-    // ou modifier l'API pour accepter 'per_page' etc.
-    // Pour ce refactor, nous allons utiliser l'endpoint proxy pour récupérer les données de marché
-    // si nous avons une liste d'IDs, ou sinon il faut adapter l'API pour supporter "Top N".
-
-    // Adaptation : Utilisation directe de l'API CoinGecko via Proxy pour une liste définie (solution MVP)
-    // OU appel à notre endpoint si modifié.
-    // Le prompt demandait un endpoint proxy. Pour simplifier et respecter la demande du prompt 1 (Proxy API sur mon serveur),
-    // je vais adapter l'appel pour utiliser l'endpoint `/api/crypto/market-data`
-    // Si l'endpoint ne supporte pas "top N" sans IDs, on passera une liste par défaut pour l'exemple
-    // ou on modifiera l'endpoint API pour être plus flexible.
-
-    // Ici, je vais appeler l'API interne avec une liste par défaut de gros coins pour l'exemple MVP
-    // ou mieux, modifier l'API route pour supporter le mode "list" sans IDs.
-    // Vu l'implémentation de l'API route `market-data` qui exige `ids`, je vais passer une liste "Top 20".
-
-    const top20Ids =
-      "bitcoin,ethereum,tether,binancecoin,solana,ripple,usdc,staked-ether,cardano,avalanche-2,dogecoin,polkadot,tron,chainlink,matic-network,toncoin,shiba-inu,litecoin,dai,bitcoin-cash";
-
-    const cacheKey = `top_cryptos_proxy_${limit}`;
+  // Récupérer le top des cryptomonnaies/Marché (Paginé)
+  async getTopCryptos(page = 1, limit = 50) {
+    const cacheKey = `top_cryptos_p${page}_l${limit}`;
     const cached = this.cache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
@@ -137,30 +117,54 @@ class CryptoService {
 
     try {
       const response = await fetch(
-        `/api/crypto/market-data?ids=${top20Ids}&vs_currency=usd`
+        `/api/crypto/market-data?vs_currency=usd&page=${page}&per_page=${limit}`
       );
 
       if (!response.ok) {
-        if (response.status === 429) {
-          if (cached) return cached.data;
-        }
+        if (cached) return cached.data;
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
 
       const data = await response.json();
 
-      // Limiter le résultat si nécessaire
-      const finalData = data.slice(0, limit);
-
       this.cache.set(cacheKey, {
-        data: finalData,
+        data: data,
         timestamp: Date.now(),
       });
-      return finalData;
+      return data;
     } catch (error) {
       console.error("Erreur getTopCryptos:", error);
       if (cached) return cached.data;
-      throw error;
+      return [];
+    }
+  }
+
+  // Rechercher des cryptos et récupérer leurs données de marché
+  async searchCryptos(query: string) {
+    try {
+      // 1. Search Query
+      const searchRes = await fetch(`/api/crypto/search?query=${query}`);
+      if (!searchRes.ok) throw new Error("Search failed");
+      const searchData = await searchRes.json();
+
+      if (!searchData.coins || searchData.coins.length === 0) return [];
+
+      // 2. Extract IDs (limit to top 20 matches to avoid overload)
+      const ids = searchData.coins
+        .slice(0, 20)
+        .map((c: any) => c.id)
+        .join(",");
+
+      // 3. Get Market Data for these IDs
+      const marketRes = await fetch(
+        `/api/crypto/market-data?vs_currency=usd&ids=${ids}`
+      );
+      if (!marketRes.ok) throw new Error("Market data fetch failed");
+
+      return await marketRes.json();
+    } catch (error) {
+      console.error("Erreur searchCryptos:", error);
+      return [];
     }
   }
 

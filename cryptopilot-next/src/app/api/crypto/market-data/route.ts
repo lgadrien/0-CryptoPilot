@@ -8,15 +8,13 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const ids = searchParams.get("ids");
   const currency = searchParams.get("vs_currency") || "usd";
+  const page = searchParams.get("page") || "1";
+  const per_page = searchParams.get("per_page") || "50";
 
-  if (!ids) {
-    return NextResponse.json(
-      { error: "Missing ids parameter" },
-      { status: 400 }
-    );
-  }
-
-  const cacheKey = `crypto:market:${ids}:${currency}`;
+  // Cache key incluant la pagination
+  const cacheKey = ids
+    ? `crypto:market:${ids}:${currency}`
+    : `crypto:market:top:${currency}:${page}:${per_page}`;
 
   try {
     // 1. Check Cache
@@ -28,15 +26,19 @@ export async function GET(request: Request) {
     }
 
     // 2. Fetch from CoinGecko
-    const response = await fetch(
-      `${COINGECKO_API_URL}/coins/markets?vs_currency=${currency}&ids=${ids}&order=market_cap_desc&sparkline=true&price_change_percentage=24h`,
-      {
-        headers: {
-          // Add API key here if you have one later
-          // 'x-cg-demo-api-key': process.env.COINGECKO_API_KEY
-        },
-      }
-    );
+    let url = `${COINGECKO_API_URL}/coins/markets?vs_currency=${currency}&order=market_cap_desc&sparkline=true&price_change_percentage=24h`;
+
+    if (ids) {
+      url += `&ids=${ids}`;
+    } else {
+      url += `&per_page=${per_page}&page=${page}`;
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        // 'x-cg-demo-api-key': process.env.COINGECKO_API_KEY
+      },
+    });
 
     if (!response.ok) {
       if (response.status === 429) {

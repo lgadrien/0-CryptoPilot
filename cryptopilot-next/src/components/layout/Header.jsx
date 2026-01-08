@@ -14,7 +14,10 @@ import {
   X,
   Home,
   LayoutDashboard,
+  Search,
   Bell,
+  Settings,
+  TrendingUp,
   Wallet,
 } from "lucide-react";
 
@@ -118,6 +121,12 @@ function Header() {
                   Home
                 </NavLink>
                 <NavLink
+                  to="/market"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Marché Crypto
+                </NavLink>
+                <NavLink
                   to="/pricing"
                   className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
                 >
@@ -131,6 +140,12 @@ function Header() {
                   className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
                 >
                   Dashboard
+                </NavLink>
+                <NavLink
+                  to="/market"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Marché
                 </NavLink>
                 <NavLink
                   to="/profile"
@@ -293,6 +308,13 @@ function Header() {
                   Home
                 </NavLink>
                 <NavLink
+                  to="/market"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
+                >
+                  Marché Crypto
+                </NavLink>
+                <NavLink
                   to="/pricing"
                   onClick={closeMobileMenu}
                   className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
@@ -309,6 +331,14 @@ function Header() {
                   icon={LayoutDashboard}
                 >
                   Dashboard
+                </NavLink>
+                <NavLink
+                  to="/market"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
+                  icon={TrendingUp}
+                >
+                  Marché
                 </NavLink>
                 <NavLink
                   to="/profile"
