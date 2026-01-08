@@ -25,7 +25,7 @@ interface AuthContextType {
   addWallet: (wallet: Wallet) => Promise<void>;
   removeWallet: (address: string) => Promise<void>;
   loginWithMetaMask: (address: string, chainId: string) => void;
-  loginWithMetaMask: (address: string, chainId: string) => void;
+
   loginWithPhantom: (address: string) => void;
   updateProfile: (data: any) => Promise<void>;
 }
@@ -377,6 +377,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      addWallet,
+      removeWallet,
       loginWithMetaMask,
       loginWithPhantom,
       updateProfile,

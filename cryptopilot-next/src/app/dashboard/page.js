@@ -22,10 +22,8 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Finance Dashboard - For MetaMask and Phantom */}
-        {(authMethod === "metamask" || authMethod === "phantom") && (
-          <FinanceDashboard />
-        )}
+        {/* Finance Dashboard */}
+        <FinanceDashboard />
       </div>
     </div>
   );

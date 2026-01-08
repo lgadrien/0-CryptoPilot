@@ -36,6 +36,7 @@ export default function ProfilePage() {
   // États d'édition
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editAddress, setEditAddress] = useState("");
 
   // Données Utilisateur Réelles (Derivées du Context)
   const displayName =
@@ -43,18 +44,22 @@ export default function ProfilePage() {
     user?.user_metadata?.full_name ||
     user?.username ||
     "Investisseur";
+  const displayAddress = user?.user_metadata?.address || user?.address || ""; // Pas d'adresse par défaut
   const displayIdentity = user?.email || walletAddress || "Anonyme";
 
   const handleStartEdit = () => {
     setEditName(displayName);
+    setEditAddress(displayAddress);
     setIsEditing(true);
   };
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = async (e) => {
+    e.preventDefault(); // Empêcher reload form
     try {
       await updateProfile({
         username: editName,
         full_name: editName,
+        address: editAddress,
       });
       setIsEditing(false);
     } catch (e) {
@@ -79,7 +84,6 @@ export default function ProfilePage() {
     const newVal = currency === "EUR" ? "USD" : "EUR";
     setCurrency(newVal);
     localStorage.setItem("preferredCurrency", newVal);
-    // Ici on pourrait déclencher un event global ou utiliser un context pour mettre à jour l'app entière
     window.dispatchEvent(new Event("currencyChanged"));
   };
 
@@ -122,7 +126,7 @@ export default function ProfilePage() {
     }, 1000);
   };
 
-  // Formatage date inscription (Fake pour l'instant ou via metadata si dispo)
+  // Formatage date inscription
   const joinDate = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("fr-FR", {
         year: "numeric",
@@ -130,14 +134,73 @@ export default function ProfilePage() {
       })
     : "Récemment";
 
-  // Calcul du Plan (Logique métier simple)
-  // Si > 1 wallet lié => On considère qu'il devrait être Pro, sinon Free
+  // Calcul du Plan
   const walletCount = linkedWallets.length + (walletAddress ? 1 : 0);
   const maxWalletsFree = 1;
-  const isPro = false; // À connecter à Stripe/Supabase plus tard
+  const isPro = false;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gray-50 dark:bg-[#0B0D12] text-gray-900 dark:text-gray-100 transition-colors duration-300 p-4 md:p-8">
+      {/* EDIT MODAL */}
+      {isEditing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1C1F26] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-[#2A2D35] p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">Modifier le Profil</h2>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nom d'affichage
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                  placeholder="Votre nom"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Adresse (Optionnel)
+                </label>
+                <input
+                  type="text"
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                  placeholder="Paris, France..."
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 py-2.5 rounded-xl text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-black font-bold hover:bg-[#C5A028] shadow-lg shadow-[#D4AF37]/20 transition-all"
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto space-y-8">
         {/* HEADER: Identity Card (Bento Style) */}
         <div className="relative group rounded-3xl p-6 md:p-8 overflow-hidden bg-white dark:bg-[#15171C] border border-gray-200 dark:border-white/5 shadow-xl transition-all hover:shadow-2xl">
@@ -153,45 +216,28 @@ export default function ProfilePage() {
             {/* Info */}
             <div className="flex-1 text-center md:text-left space-y-2">
               <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 justify-center md:justify-start">
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="bg-gray-100 dark:bg-black/30 border border-gray-300 dark:border-white/10 rounded px-2 py-1 text-xl font-bold focus:border-[#D4AF37] outline-none w-48"
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleSaveProfile}
-                      className="text-xs bg-[#D4AF37] text-black px-3 py-1.5 rounded font-bold hover:bg-[#c5a028] shadow-sm"
-                    >
-                      OK
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="text-xs text-gray-500 hover:text-red-500 px-2"
-                    >
-                      X
-                    </button>
-                  </div>
-                ) : (
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2 group/name">
-                    {displayName}
-                    <button
-                      onClick={handleStartEdit}
-                      className="opacity-50 hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-[#D4AF37]"
-                      title="Modifier le nom"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </button>
-                  </h1>
-                )}
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2 group/name">
+                  {displayName}
+                  <button
+                    onClick={handleStartEdit}
+                    className="opacity-50 hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-[#D4AF37]"
+                    title="Modifier le profil"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </h1>
               </div>
 
-              <p className="text-sm text-gray-500 font-mono bg-gray-100 dark:bg-black/20 px-2 py-1 rounded inline-block">
-                {displayIdentity}
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500 font-mono bg-gray-100 dark:bg-black/20 px-2 py-1 rounded inline-block">
+                  {displayIdentity}
+                </p>
+                {displayAddress && (
+                  <p className="text-sm text-gray-400 flex items-center justify-center md:justify-start gap-1">
+                    📍 {displayAddress}
+                  </p>
+                )}
+              </div>
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
                 <span className="flex items-center gap-1">
@@ -205,7 +251,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Status Badge (Pro Invitation) */}
+            {/* Status Badge */}
             {!isPro ? (
               <Link href="/pricing" className="shrink-0 mt-4 md:mt-0">
                 <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37]/10 to-[#F5D76E]/10 border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all cursor-pointer group/badge hover:shadow-[0_0_15px_rgba(212,175,55,0.2)]">
@@ -225,13 +271,13 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* SECTION 2: Wallet Management (NEW) */}
+        {/* SECTION 2: Wallet Management */}
         <div>
           <WalletManager />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* CARD 2: Preferences (Glassmorphism) */}
+          {/* Preferences */}
           <div className="bg-white/80 dark:bg-[#15171C]/80 backdrop-blur-md rounded-2xl p-6 border border-gray-200 dark:border-white/5 shadow-sm space-y-6 flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300">
@@ -240,7 +286,7 @@ export default function ProfilePage() {
               <h2 className="text-lg font-bold">Préférences</h2>
             </div>
 
-            {/* Currency Toggle */}
+            {/* Currency */}
             <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div>
                 <p className="font-medium text-sm">Devise principale</p>
@@ -260,7 +306,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Ghost Mode Toggle */}
+            {/* Ghost Mode */}
             <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div>
                 <p className="font-medium text-sm flex items-center gap-2">
@@ -284,7 +330,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Notifications Checkbox */}
+            {/* Notifications */}
             <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div>
                 <p className="font-medium text-sm">Alertes de Prix</p>
@@ -307,7 +353,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* CARD 3: Subscription & Limits */}
+          {/* Subscription */}
           <div className="bg-white/80 dark:bg-[#15171C]/80 backdrop-blur-md rounded-2xl p-6 border border-gray-200 dark:border-white/5 shadow-sm flex flex-col justify-between">
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-4">
