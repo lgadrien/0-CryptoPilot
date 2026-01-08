@@ -12,6 +12,7 @@ import WalletManager from "./WalletManager";
 import PortfolioStats from "./PortfolioStats";
 import PerformanceChart from "./PerformanceChart";
 import AssetList from "./AssetList";
+import HealthScoreCard from "../dashboard/HealthScoreCard";
 
 export default function FinanceDashboard() {
   // Contexts
@@ -215,6 +216,9 @@ export default function FinanceDashboard() {
         authMethod={authMethod}
         walletAddress={walletAddress}
       />
+
+      {/* Wallet Health Score (Gamification) */}
+      <HealthScoreCard assets={cryptos} />
 
       {/* Performance Chart */}
       <PerformanceChart
