@@ -1,14 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { login } from "./actions";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { login, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
 
   const togglePassword = useCallback(() => {
     setShowPassword((prev) => !prev);
@@ -17,16 +27,17 @@ export default function Login() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     setError(null);
+
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
     try {
-      const result = await login(formData);
-      if (result?.error) {
-        setError(result.error);
-        setLoading(false);
-      }
-      // If success, the server action redirects, so we don't need to do anything else.
-      // We leave loading true to show spinner while redirecting.
+      await login({ identifier: email, password });
+      // Redirect is handled by useEffect or here
+      router.push("/dashboard");
     } catch (e: any) {
-      setError(e.message || "Une erreur est survenue");
+      console.error(e);
+      setError(e.message || "Identifiants incorrects");
       setLoading(false);
     }
   };

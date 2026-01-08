@@ -55,11 +55,11 @@ const cryptoLogos = [
 
 // Composant Feature Card mémorisé
 const FeatureCard = memo(({ icon: Icon, title, description }) => (
-  <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/5 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-white/10 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
+  <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/80 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-gray-200 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
     <div className="p-3 rounded-full bg-[#D4AF37]/10 group-hover:bg-[#D4AF37]/20 transition-colors">
       <Icon className="w-8 h-8 text-[#D4AF37] group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.5)] transition-all" />
     </div>
-    <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-gray-100 tracking-tight">
+    <h3 className="font-bold text-base sm:text-lg text-gray-800 dark:text-gray-100 tracking-tight">
       {title}
     </h3>
     <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
@@ -191,11 +191,11 @@ export default function Home() {
       </div>
 
       <div className="flex-1 w-full overflow-y-auto z-10 scroll-smooth">
-        <main className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-24 relative z-10 w-full max-w-7xl mx-auto space-y-32">
+        <main className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-24 relative z-10 w-full max-w-7xl mx-auto space-y-16 sm:space-y-32">
           {/* Section Hero */}
           <div className="text-center max-w-4xl relative">
             {/* Gradient radial sombre derrière le texte pour la lisibilité */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-black/40 blur-3xl -z-10 rounded-full pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/80 dark:bg-black/40 blur-3xl -z-10 rounded-full pointer-events-none transition-colors duration-300"></div>
 
             {/* Titre */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 tracking-tight animate-fade-in">

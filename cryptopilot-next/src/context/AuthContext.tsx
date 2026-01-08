@@ -152,11 +152,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email = data.email;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
+
+      if (data?.session?.user) {
+        setUser({
+          id: data.session.user.id,
+          email: data.session.user.email,
+          ...(data.session.user.user_metadata as any),
+        });
+        setIsAuthenticated(true);
+        setAuthMethod("traditional");
+        // We don't await this to keep login fast, but it runs in background
+        fetchWallets(data.session.user.id);
+      }
     },
     [supabase]
   );

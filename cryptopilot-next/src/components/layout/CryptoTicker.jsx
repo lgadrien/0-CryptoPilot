@@ -98,7 +98,7 @@ function CryptoTicker() {
   }
 
   return (
-    <div className="w-full overflow-hidden border-t border-white/10 bg-[#0B0D12]/80 backdrop-blur-sm group cursor-pointer font-sans transition-colors duration-300 z-50">
+    <div className="w-full overflow-hidden border-t border-gray-200 dark:border-white/10 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-sm group cursor-pointer font-sans transition-colors duration-300 z-50">
       <div className="relative flex whitespace-nowrap">
         <div className="animate-marquee flex space-x-6 sm:space-x-10 py-2 sm:py-3 px-4 sm:px-6 group-hover:[animation-play-state:paused]">
           {cryptos.map((coin) => (

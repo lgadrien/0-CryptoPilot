@@ -10,7 +10,13 @@ const FeatureItem = ({ included, text }) => (
     ) : (
       <X className="w-5 h-5 text-gray-400 shrink-0" />
     )}
-    <span className={included ? "text-gray-200" : "text-gray-500 line-through"}>
+    <span
+      className={
+        included
+          ? "text-gray-700 dark:text-gray-200"
+          : "text-gray-400 dark:text-gray-500 line-through"
+      }
+    >
       {text}
     </span>
   </li>
@@ -36,8 +42,8 @@ const PricingCard = memo(({ plan, featured = false }) => {
     <div
       className={`relative flex flex-col p-6 rounded-2xl transition-all duration-300 ${
         featured
-          ? "bg-[#1C1F26] border-2 border-[#D4AF37] shadow-[0_0_40px_rgba(212,175,55,0.4)] md:scale-110 z-10"
-          : "bg-[#0F1115] border border-white/5 hover:border-white/10 md:scale-95 opacity-90 hover:opacity-100"
+          ? "bg-white dark:bg-[#1C1F26] border-2 border-[#D4AF37] shadow-[0_0_40px_rgba(212,175,55,0.2)] dark:shadow-[0_0_40px_rgba(212,175,55,0.4)] md:scale-110 z-10"
+          : "bg-white/50 dark:bg-[#0F1115] border border-gray-200 dark:border-white/5 hover:border-[#D4AF37]/30 dark:hover:border-white/10 md:scale-95 opacity-90 hover:opacity-100"
       }`}
     >
       {featured && (
@@ -49,7 +55,7 @@ const PricingCard = memo(({ plan, featured = false }) => {
       <div className="mb-8 text-center feature-header">
         <h3
           className={`text-xl font-bold mb-2 ${
-            featured ? "text-[#D4AF37]" : "text-gray-300"
+            featured ? "text-[#D4AF37]" : "text-gray-900 dark:text-gray-300"
           }`}
         >
           {name}
@@ -60,9 +66,13 @@ const PricingCard = memo(({ plan, featured = false }) => {
               {oldPrice}
             </span>
           )}
-          <span className="text-4xl font-black text-white">{price}</span>
+          <span className="text-4xl font-black text-gray-900 dark:text-white">
+            {price}
+          </span>
         </div>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-500">
+          {description}
+        </p>
       </div>
 
       <ul className="flex-1 space-y-4 mb-8 text-sm">
@@ -80,7 +90,7 @@ const PricingCard = memo(({ plan, featured = false }) => {
         className={`w-full py-4 rounded-xl font-bold text-center transition-all duration-300 ${
           featured
             ? "bg-gradient-to-r from-[#D4AF37] to-[#C5A028] text-white shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transform hover:-translate-y-1"
-            : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5"
+            : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white border border-transparent dark:border-white/5"
         }`}
       >
         {cta}
@@ -141,19 +151,19 @@ const plans = [
 
 export default function PricingSection() {
   return (
-    <section className="py-20 px-4 relative z-10 w-full max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
+    <section className="py-2 md:py-8 px-4 relative z-10 w-full max-w-7xl mx-auto flex flex-col justify-start md:justify-center md:h-full">
+      <div className="text-center mb-4 md:mb-10 shrink-0">
+        <h2 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">
           Votre Patrimoine mérite l'
           <span className="text-[#D4AF37]">Excellence</span>.
         </h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4">
           Des outils de niveau institutionnel pour vos investissements
           personnels. Fini le bricolage.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-stretch max-w-6xl mx-auto w-full">
         {/* Tourist */}
         <PricingCard plan={plans[0]} />
 
@@ -164,9 +174,9 @@ export default function PricingSection() {
         <PricingCard plan={plans[2]} />
       </div>
 
-      <div className="mt-12 text-center">
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 font-medium">
-          <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
+      <div className="mt-8 md:mt-10 text-center shrink-0">
+        <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-gray-500 font-medium">
+          <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-[#D4AF37]" />
           <span>
             Satisfait ou Remboursé sous 30 jours. Zéro question posée.
           </span>
