@@ -168,6 +168,26 @@ class CryptoService {
     }
   }
 
+  // Récupérer l'historique des prix (Chart)
+  async getMarketChart(coinId: string, days = 7) {
+    const cacheKey = `chart:${coinId}:${days}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.cacheExpiry)
+      return cached.data;
+
+    try {
+      const res = await fetch(`/api/crypto/history?id=${coinId}&days=${days}`);
+      if (!res.ok) throw new Error("Chart fetch failed");
+      const data = await res.json();
+
+      this.cache.set(cacheKey, { data, timestamp: Date.now() });
+      return data;
+    } catch (e) {
+      console.error("Erreur getMarketChart", e);
+      return null;
+    }
+  }
+
   // Nettoyer le cache
   clearCache() {
     this.cache.clear();
