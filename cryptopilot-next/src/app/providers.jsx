@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider } from "../context/ThemeContext";
 import { AuthProvider } from "../context/AuthContext";
 
 export function Providers({ children }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider>
       <AuthProvider>{children}</AuthProvider>
-    </NextThemesProvider>
+    </ThemeProvider>
   );
 }
