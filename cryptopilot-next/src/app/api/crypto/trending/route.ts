@@ -29,19 +29,21 @@ export async function GET() {
     const data = await response.json();
 
     // Extract top 10 coins and format them
-    const trendingCoins = data.coins.slice(0, 10).map((item, index) => ({
-      name: item.item.name,
-      symbol: item.item.symbol,
-      src: item.item.large, // Use large image
-      size:
-        index % 3 === 0
-          ? "w-24 h-24"
-          : index % 3 === 1
-          ? "w-20 h-20"
-          : "w-16 h-16", // Varied sizes based on index
-      float: `animate-float-${(index % 5) + 1}`, // Varied float animation 1-5
-      id: item.item.id,
-    }));
+    const trendingCoins = data.coins
+      .slice(0, 10)
+      .map((item: any, index: number) => ({
+        name: item.item.name,
+        symbol: item.item.symbol,
+        src: item.item.large, // Use large image
+        size:
+          index % 3 === 0
+            ? "w-24 h-24"
+            : index % 3 === 1
+            ? "w-20 h-20"
+            : "w-16 h-16", // Varied sizes based on index
+        float: `animate-float-${(index % 5) + 1}`, // Varied float animation 1-5
+        id: item.item.id,
+      }));
 
     // 3. Set Cache
     if (redis) {
