@@ -142,7 +142,8 @@ body {
 
 /* Transition pour tous les éléments avec dark mode */
 * {
-  transition-property: background-color, border-color, color;
+  transition-property: background-color, border-color, color, fill, stroke,
+    box-shadow, opacity;
   transition-duration: 0.3s;
   transition-timing-function: ease;
 }
