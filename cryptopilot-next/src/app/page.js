@@ -55,12 +55,16 @@ const cryptoLogos = [
 
 // Composant Feature Card mémorisé
 const FeatureCard = memo(({ icon: Icon, title, description }) => (
-  <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/70 dark:bg-[#1C1F26]/70 backdrop-blur-md border border-white/20 dark:border-white/10 hover:border-[#D4AF37] dark:hover:border-[#D4AF37] transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#D4AF37]/20">
-    <Icon className="w-8 h-8 text-[#D4AF37]" />
-    <h3 className="font-bold text-sm sm:text-base text-gray-800 dark:text-gray-200">
+  <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/5 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-white/10 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
+    <div className="p-3 rounded-full bg-[#D4AF37]/10 group-hover:bg-[#D4AF37]/20 transition-colors">
+      <Icon className="w-8 h-8 text-[#D4AF37] group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.5)] transition-all" />
+    </div>
+    <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-gray-100 tracking-tight">
       {title}
     </h3>
-    <p className="text-xs text-gray-600 dark:text-gray-400">{description}</p>
+    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
+      {description}
+    </p>
   </div>
 ));
 FeatureCard.displayName = "FeatureCard";
@@ -166,14 +170,14 @@ export default function Home() {
       {/* Background amélioré : Grille et Lueurs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Grille technologique subtile */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_40%,#000_60%,transparent_100%)]"></div>
 
         {/* Lueurs d'ambiance statiques pour le mode sombre */}
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#D4AF37]/10 blur-[100px] rounded-full mix-blend-screen opacity-0 dark:opacity-40 transition-opacity duration-500"></div>
       </div>
 
-      {/* Background pattern crypto avec logos CoinGecko */}
-      <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.12] pointer-events-none">
+      {/* Background pattern crypto avec logos CoinGecko - Opacité réduite pour la lisibilité */}
+      <div className="absolute inset-0 opacity-[0.07] pointer-events-none">
         {logoPositions.length > 0 &&
           cryptoLogos.map((logo, index) => (
             <CryptoLogo
@@ -186,50 +190,56 @@ export default function Home() {
           ))}
       </div>
 
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-0 -mt-8 sm:-mt-12 relative z-10">
-        <div className="text-center max-w-4xl">
-          {/* Titre */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 tracking-tight animate-fade-in">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F5D76E] to-[#D4AF37] bg-[length:200%] animate-gradient">
-              CryptoPilot
-            </span>
-          </h1>
+      <div className="flex-1 w-full overflow-y-auto z-10 scroll-smooth">
+        <main className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-24 relative z-10 w-full max-w-7xl mx-auto space-y-32">
+          {/* Section Hero */}
+          <div className="text-center max-w-4xl relative">
+            {/* Gradient radial sombre derrière le texte pour la lisibilité */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-black/40 blur-3xl -z-10 rounded-full pointer-events-none"></div>
 
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium mb-6 sm:mb-8 px-4 max-w-2xl mx-auto">
-            Votre tableau de bord crypto personnel pour suivre, analyser et
-            optimiser vos investissements
-          </p>
+            {/* Titre */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 tracking-tight animate-fade-in">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F5D76E] to-[#D4AF37] bg-[length:200%] animate-gradient">
+                CryptoPilot
+              </span>
+            </h1>
 
-          {/* Features mini - Glassmorphism renforcé */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 px-4 max-w-3xl mx-auto">
-            {features.map((feature, index) => (
-              <FeatureCard
-                key={index}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-              />
-            ))}
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium mb-6 sm:mb-8 px-4 max-w-2xl mx-auto">
+              Votre tableau de bord crypto personnel pour suivre, analyser et
+              optimiser vos investissements
+            </p>
+
+            {/* Features mini - Glassmorphism renforcé */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 px-4 max-w-3xl mx-auto">
+              {features.map((feature, index) => (
+                <FeatureCard
+                  key={index}
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                />
+              ))}
+            </div>
+
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
+              <Link
+                href="/register"
+                className="px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base bg-gradient-to-r from-[#D4AF37] to-[#C5A028] text-white shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Commencer gratuitement
+              </Link>
+
+              <Link
+                href="/login"
+                className="px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base bg-white dark:bg-[#1C1F26] text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] dark:hover:border-[#D4AF37] transition-all duration-300 hover:scale-105 transform hover:shadow-xl"
+              >
+                Se connecter
+              </Link>
+            </div>
           </div>
-
-          {/* Boutons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-            <Link
-              href="/register"
-              className="px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base bg-gradient-to-r from-[#D4AF37] to-[#F5D76E] text-[#0B0D12] hover:shadow-2xl hover:shadow-[#D4AF37]/50 transition-all duration-300 hover:scale-105 transform animate-pulse-glow"
-            >
-              Commencer gratuitement
-            </Link>
-
-            <Link
-              href="/login"
-              className="px-8 sm:px-10 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base bg-white dark:bg-[#1C1F26] text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] dark:hover:border-[#D4AF37] transition-all duration-300 hover:scale-105 transform hover:shadow-xl"
-            >
-              Se connecter
-            </Link>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       <CryptoTicker />
     </div>

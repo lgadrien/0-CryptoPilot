@@ -106,6 +106,15 @@ function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
+          <NavLink
+            to="/pricing"
+            icon={null}
+            className="group flex items-center gap-2"
+          >
+            <span className="text-gray-400 font-bold transition-all duration-200 group-hover:text-[#D4AF37]">
+              💎 Offres
+            </span>
+          </NavLink>
           {!isAuthenticated ? (
             <NavLink
               to="/"
@@ -251,6 +260,14 @@ function Header() {
       {showMobileMenu && (
         <div className="fixed top-16 left-0 right-0 bg-white dark:bg-[#1C1F26] border-b border-gray-200 dark:border-[#2A2D35] md:hidden z-50 shadow-xl animate-slide-down">
           <nav className="flex flex-col p-4 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <NavLink
+              to="/pricing"
+              onClick={closeMobileMenu}
+              className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0B0D12] px-4 py-3 rounded-lg transition-colors font-medium"
+              icon={null}
+            >
+              💎 Offres
+            </NavLink>
             {!isAuthenticated ? (
               <NavLink
                 to="/"
