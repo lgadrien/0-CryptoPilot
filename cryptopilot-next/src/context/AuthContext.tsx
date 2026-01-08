@@ -6,20 +6,39 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  ReactNode,
 } from "react";
 import { createClient } from "../lib/supabase";
+import { Wallet, User } from "../types";
+import { Session } from "@supabase/supabase-js";
 
-const AuthContext = createContext();
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: User | null;
+  walletAddress: string | null;
+  authMethod: string;
+  linkedWallets: Wallet[];
+  loading: boolean;
+  login: (credentials: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
+  logout: () => Promise<void>;
+  addWallet: (wallet: Wallet) => Promise<void>;
+  removeWallet: (address: string) => Promise<void>;
+  loginWithMetaMask: (address: string, chainId: string) => void;
+  loginWithPhantom: (address: string) => void;
+}
 
-export function AuthProvider({ children }) {
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   // Supabase Client
   const supabase = createClient();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null); // Supabase User or Guest Object
-  const [walletAddress, setWalletAddress] = useState(null); // Active viewing wallet
+  const [user, setUser] = useState<User | null>(null); // Supabase User or Guest Object
+  const [walletAddress, setWalletAddress] = useState<string | null>(null); // Active viewing wallet
   const [authMethod, setAuthMethod] = useState("traditional");
-  const [linkedWallets, setLinkedWallets] = useState([]);
+  const [linkedWallets, setLinkedWallets] = useState<Wallet[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. Initial Load & Supabase Listener
@@ -32,7 +51,11 @@ export function AuthProvider({ children }) {
 
       if (session?.user) {
         // Authenticated with Supabase
-        setUser(session.user);
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          ...(session.user.user_metadata as any),
+        });
         setIsAuthenticated(true);
         setAuthMethod("traditional");
         await fetchWallets(session.user.id);
@@ -45,7 +68,7 @@ export function AuthProvider({ children }) {
           const savedWallets = localStorage.getItem("linkedWallets");
 
           if (savedUser) setUser(JSON.parse(savedUser));
-          if (savedMethod) setAuthMethod(savedMethod);
+          if (savedMethod) setAuthMethod(savedMethod ?? "traditional");
           if (savedWallets) setLinkedWallets(JSON.parse(savedWallets));
 
           setIsAuthenticated(true);
@@ -62,7 +85,11 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser(session.user);
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          ...(session.user.user_metadata as any),
+        });
         setIsAuthenticated(true);
         setAuthMethod("traditional");
         await fetchWallets(session.user.id);
@@ -78,7 +105,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Fetch Wallets helper
-  const fetchWallets = async (userId) => {
+  const fetchWallets = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from("wallets")
@@ -86,7 +113,15 @@ export function AuthProvider({ children }) {
         .eq("user_id", userId);
 
       if (error) throw error;
-      setLinkedWallets(data || []);
+      // Map Supabase response to Wallet type if necessary
+      const mappedWallets: Wallet[] = (data || []).map((w: any) => ({
+        type: w.type,
+        address: w.address,
+        chainId: w.chain_id,
+        connectedAt: w.created_at,
+      }));
+
+      setLinkedWallets(mappedWallets);
 
       // Set primary wallet if none selected locally
       if (data && data.length > 0 && !localStorage.getItem("walletAddress")) {
@@ -100,7 +135,7 @@ export function AuthProvider({ children }) {
 
   // 2. Auth Methods
   const login = useCallback(
-    async ({ identifier, password }) => {
+    async ({ identifier, password }: any) => {
       let email = identifier;
 
       // Si ce n'est pas un email (pas de @), on suppose que c'est un téléphone
@@ -127,7 +162,7 @@ export function AuthProvider({ children }) {
   );
 
   const register = useCallback(
-    async ({ email, password, name, phone }) => {
+    async ({ email, password, name, phone }: any) => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -155,7 +190,7 @@ export function AuthProvider({ children }) {
 
   // 3. Wallet Management (Hybrid Stub)
   const addWallet = useCallback(
-    async (walletData) => {
+    async (walletData: Wallet) => {
       // Check if duplicate locally first
       if (linkedWallets.some((w) => w.address === walletData.address)) return;
 
@@ -186,7 +221,7 @@ export function AuthProvider({ children }) {
         // Update User object for Guest
         if (!user?.id) {
           // Only if not Supabase user
-          const guestUser = { type: "guest", ...walletData };
+          const guestUser: User = { ...walletData, type: "guest" };
           setUser(guestUser);
           localStorage.setItem("user", JSON.stringify(guestUser));
           localStorage.setItem("isAuthenticated", "true");
@@ -204,7 +239,7 @@ export function AuthProvider({ children }) {
   );
 
   const removeWallet = useCallback(
-    async (address) => {
+    async (address: string) => {
       if (user?.id) {
         const { error } = await supabase
           .from("wallets")
@@ -234,8 +269,8 @@ export function AuthProvider({ children }) {
 
   // Legacy/Shortcut wrappers
   const loginWithMetaMask = useCallback(
-    (address, chainId) => {
-      const wallet = {
+    (address: string, chainId: string) => {
+      const wallet: Wallet = {
         address,
         chainId,
         type: "metamask",
@@ -249,8 +284,8 @@ export function AuthProvider({ children }) {
   );
 
   const loginWithPhantom = useCallback(
-    (address) => {
-      const wallet = {
+    (address: string) => {
+      const wallet: Wallet = {
         address,
         type: "phantom",
         connectedAt: new Date().toISOString(),

@@ -1,12 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
-import { BrowserProvider } from "ethers";
+import { BrowserProvider, Eip1193Provider } from "ethers";
+
+declare global {
+  interface Window {
+    ethereum?: Eip1193Provider & {
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (
+        event: string,
+        callback: (...args: any[]) => void
+      ) => void;
+      isMetaMask?: boolean;
+    };
+  }
+}
 
 export function useMetaMask() {
-  const [account, setAccount] = useState(null);
-  const [chainId, setChainId] = useState(null);
+  const [account, setAccount] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState(null);
-  const [provider, setProvider] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<BrowserProvider | null>(null);
 
   // Vérifier si MetaMask est installé
   const isMetaMaskInstalled = () => {
@@ -17,7 +31,7 @@ export function useMetaMask() {
 
   // Se connecter à MetaMask
   const connectMetaMask = useCallback(async () => {
-    if (!isMetaMaskInstalled()) {
+    if (!isMetaMaskInstalled() || !window.ethereum) {
       setError(
         "MetaMask n'est pas installé. Veuillez l'installer depuis metamask.io"
       );
@@ -33,7 +47,7 @@ export function useMetaMask() {
         method: "eth_requestAccounts",
       });
 
-      if (accounts.length === 0) {
+      if (!accounts || accounts.length === 0) {
         throw new Error("Aucun compte trouvé");
       }
 
@@ -48,7 +62,7 @@ export function useMetaMask() {
       setProvider(provider);
 
       return { account, chainId, provider };
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erreur de connexion MetaMask:", err);
       if (err.code === 4001) {
         setError("Connexion refusée par l'utilisateur");
@@ -71,20 +85,20 @@ export function useMetaMask() {
 
   // Écouter les changements de compte
   useEffect(() => {
-    if (!isMetaMaskInstalled()) return;
+    if (!isMetaMaskInstalled() || !window.ethereum) return;
 
     // Réinitialiser le provider si MetaMask est disponible mais pas encore connecté
     const initProvider = async () => {
       try {
-        const accounts = await window.ethereum.request({
+        const accounts = await window.ethereum!.request({
           method: "eth_accounts",
         });
-        if (accounts.length > 0) {
+        if (accounts && accounts.length > 0) {
           const account = accounts[0];
-          const chainId = await window.ethereum.request({
+          const chainId = await window.ethereum!.request({
             method: "eth_chainId",
           });
-          const provider = new BrowserProvider(window.ethereum);
+          const provider = new BrowserProvider(window.ethereum!);
 
           setAccount(account);
           setChainId(chainId);
@@ -97,18 +111,20 @@ export function useMetaMask() {
 
     initProvider();
 
-    const handleAccountsChanged = (accounts) => {
+    const handleAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) {
         disconnect();
       } else if (accounts[0] !== account) {
         setAccount(accounts[0]);
         // Recréer le provider lors du changement de compte
-        const newProvider = new BrowserProvider(window.ethereum);
-        setProvider(newProvider);
+        if (window.ethereum) {
+          const newProvider = new BrowserProvider(window.ethereum);
+          setProvider(newProvider);
+        }
       }
     };
 
-    const handleChainChanged = (chainId) => {
+    const handleChainChanged = (chainId: string) => {
       setChainId(chainId);
       window.location.reload();
     };
@@ -117,7 +133,7 @@ export function useMetaMask() {
     window.ethereum.on("chainChanged", handleChainChanged);
 
     return () => {
-      if (window.ethereum.removeListener) {
+      if (window.ethereum?.removeListener) {
         window.ethereum.removeListener(
           "accountsChanged",
           handleAccountsChanged
@@ -129,11 +145,11 @@ export function useMetaMask() {
 
   // Obtenir le solde en ETH
   const getBalance = useCallback(
-    async (address) => {
+    async (address: string) => {
       if (!provider) return null;
 
       try {
-        const balance = await provider.getBalance(address || account);
+        const balance = await provider.getBalance(address || account!);
         return balance;
       } catch (err) {
         console.error("Erreur lors de la récupération du solde:", err);
@@ -144,14 +160,14 @@ export function useMetaMask() {
   );
 
   // Formater l'adresse (0x1234...5678)
-  const formatAddress = (address) => {
+  const formatAddress = (address: string) => {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   // Obtenir le nom du réseau
-  const getNetworkName = (chainId) => {
-    const networks = {
+  const getNetworkName = (chainId: string) => {
+    const networks: Record<string, string> = {
       "0x1": "Ethereum Mainnet",
       "0x5": "Goerli Testnet",
       "0xaa36a7": "Sepolia Testnet",

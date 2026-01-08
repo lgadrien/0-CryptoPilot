@@ -1,5 +1,11 @@
 // Service pour récupérer les prix des cryptomonnaies
 class CryptoService {
+  private baseUrl: string;
+  private cache: Map<string, { data: any; timestamp: number }>;
+  private cacheExpiry: number;
+  private requestQueue: any[];
+  private isProcessing: boolean;
+
   constructor() {
     this.baseUrl = "https://api.coingecko.com/api/v3";
     this.cache = new Map();
@@ -9,7 +15,7 @@ class CryptoService {
   }
 
   // Récupérer le prix d'une crypto en USD
-  async getPrice(coinId) {
+  async getPrice(coinId: string) {
     const cacheKey = `price_${coinId}`;
     const cached = this.cache.get(cacheKey);
 
@@ -50,7 +56,7 @@ class CryptoService {
   }
 
   // Convertir ETH en USD
-  async convertEthToUsd(ethAmount) {
+  async convertEthToUsd(ethAmount: number) {
     try {
       const priceData = await this.getPrice("ethereum");
 

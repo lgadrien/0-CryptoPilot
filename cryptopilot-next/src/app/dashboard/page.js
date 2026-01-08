@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "../../context/AuthContext";
-import FinanceDashboard from "../../component/Portfolio/FinanceDashboard";
+import FinanceDashboard from "../../components/portfolio/FinanceDashboard";
 
 export default function Dashboard() {
   const { authMethod } = useAuth();

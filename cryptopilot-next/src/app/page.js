@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import CryptoTicker from "../component/layout/CryptoTicker";
+import CryptoTicker from "../components/layout/CryptoTicker";
 import { TrendingUp, Wallet, Zap } from "lucide-react";
 import { useState, useEffect, useMemo, memo } from "react";
 
@@ -9,47 +9,47 @@ const cryptoLogos = [
   {
     src: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
     size: "w-24 h-24",
-    float: "float-1",
+    float: "animate-float-1",
   },
   {
     src: "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
     size: "w-20 h-20",
-    float: "float-2",
+    float: "animate-float-2",
   },
   {
     src: "https://assets.coingecko.com/coins/images/325/large/Tether.png",
     size: "w-20 h-20",
-    float: "float-3",
+    float: "animate-float-3",
   },
   {
     src: "https://assets.coingecko.com/coins/images/975/large/cardano.png",
     size: "w-16 h-16",
-    float: "float-4",
+    float: "animate-float-4",
   },
   {
     src: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
     size: "w-20 h-20",
-    float: "float-5",
+    float: "animate-float-5",
   },
   {
     src: "https://assets.coingecko.com/coins/images/4128/large/solana.png",
     size: "w-18 h-18",
-    float: "float-1",
+    float: "animate-float-1",
   },
   {
     src: "https://assets.coingecko.com/coins/images/22617/large/astr.png",
     size: "w-20 h-20",
-    float: "float-2",
+    float: "animate-float-2",
   },
   {
     src: "https://assets.coingecko.com/coins/images/17810/large/asterdex.png",
     size: "w-18 h-18",
-    float: "float-3",
+    float: "animate-float-3",
   },
   {
     src: "https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png",
     size: "w-20 h-20",
-    float: "float-4",
+    float: "animate-float-4",
   },
 ];
 
@@ -162,68 +162,6 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1 relative overflow-hidden">
       {/* Animations CSS pour le flottement */}
-      <style jsx global>{`
-        @keyframes float1 {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-15px);
-          }
-        }
-        @keyframes float2 {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-20px);
-          }
-        }
-        @keyframes float3 {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-12px);
-          }
-        }
-        @keyframes float4 {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-18px);
-          }
-        }
-        @keyframes float5 {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        .float-1 {
-          animation: float1 8s ease-in-out infinite;
-        }
-        .float-2 {
-          animation: float2 10s ease-in-out infinite;
-        }
-        .float-3 {
-          animation: float3 7s ease-in-out infinite;
-        }
-        .float-4 {
-          animation: float4 9s ease-in-out infinite;
-        }
-        .float-5 {
-          animation: float5 11s ease-in-out infinite;
-        }
-      `}</style>
 
       {/* Background amélioré : Grille et Lueurs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

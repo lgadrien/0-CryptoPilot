@@ -1,9 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
 
+declare global {
+  interface Window {
+    solana?: {
+      isPhantom?: boolean;
+      isConnected: boolean;
+      connect: () => Promise<{ publicKey: { toString: () => string } }>;
+      disconnect: () => Promise<void>;
+      publicKey: { toString: () => string };
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (
+        event: string,
+        callback: (...args: any[]) => void
+      ) => void;
+    };
+  }
+}
+
 export function usePhantom() {
-  const [account, setAccount] = useState(null);
+  const [account, setAccount] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Vérifier si Phantom est installé
   const isPhantomInstalled = () => {
@@ -16,7 +33,7 @@ export function usePhantom() {
 
   // Se connecter à Phantom
   const connectPhantom = useCallback(async () => {
-    if (!isPhantomInstalled()) {
+    if (!isPhantomInstalled() || !window.solana) {
       setError(
         "Phantom n'est pas installé. Veuillez l'installer depuis phantom.app"
       );
@@ -34,7 +51,7 @@ export function usePhantom() {
       setAccount(publicKey);
 
       return { account: publicKey };
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erreur de connexion Phantom:", err);
       if (err.code === 4001) {
         setError("Connexion refusée par l'utilisateur");
@@ -50,7 +67,7 @@ export function usePhantom() {
   // Se déconnecter
   const disconnect = useCallback(async () => {
     try {
-      if (isPhantomInstalled() && window.solana.isConnected) {
+      if (isPhantomInstalled() && window.solana?.isConnected) {
         await window.solana.disconnect();
       }
       setAccount(null);
@@ -62,12 +79,12 @@ export function usePhantom() {
 
   // Écouter les changements de compte
   useEffect(() => {
-    if (!isPhantomInstalled()) return;
+    if (!isPhantomInstalled() || !window.solana) return;
 
     // Réinitialiser l'account si Phantom est déjà connecté
     const initAccount = async () => {
       try {
-        if (window.solana.isConnected) {
+        if (window.solana?.isConnected) {
           const publicKey = window.solana.publicKey.toString();
           setAccount(publicKey);
         }
@@ -78,7 +95,7 @@ export function usePhantom() {
 
     initAccount();
 
-    const handleAccountChanged = (publicKey) => {
+    const handleAccountChanged = (publicKey: any) => {
       if (publicKey) {
         setAccount(publicKey.toString());
       } else {
@@ -94,7 +111,7 @@ export function usePhantom() {
     window.solana.on("disconnect", handleDisconnect);
 
     return () => {
-      if (window.solana.removeListener) {
+      if (window.solana?.removeListener) {
         window.solana.removeListener("accountChanged", handleAccountChanged);
         window.solana.removeListener("disconnect", handleDisconnect);
       }

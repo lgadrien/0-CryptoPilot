@@ -1,40 +1,35 @@
 "use client";
+
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useCallback, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useState, useCallback } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { login } from "./actions";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, router]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const togglePassword = useCallback(() => {
     setShowPassword((prev) => !prev);
   }, []);
 
-  const handleTraditionalSubmit = async (e) => {
-    e.preventDefault();
-    const identifier = e.target.identifier.value;
-    const password = e.target.password.value;
-
+  const handleSubmit = async (formData: FormData) => {
+    setLoading(true);
+    setError(null);
     try {
-      await login({ identifier, password });
-      router.push("/dashboard");
-    } catch (error) {
-      console.error(error);
-      alert("Erreur de connexion: " + error.message);
+      const result = await login(formData);
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+      }
+      // If success, the server action redirects, so we don't need to do anything else.
+      // We leave loading true to show spinner while redirecting.
+    } catch (e: any) {
+      setError(e.message || "Une erreur est survenue");
+      setLoading(false);
     }
   };
-
-  if (isAuthenticated) return null; // Or a loading spinner
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12] px-4 py-8 transition-colors duration-300">
@@ -48,21 +43,25 @@ export default function Login() {
           </p>
         </div>
 
-        <form
-          onSubmit={handleTraditionalSubmit}
-          className="space-y-5 sm:space-y-6"
-        >
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-lg text-center">
+            {error}
+          </div>
+        )}
+
+        <form action={handleSubmit} className="space-y-5 sm:space-y-6">
           <div>
             <label
-              htmlFor="identifier"
+              htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email ou Téléphone
+              Email
             </label>
             <input
-              id="identifier"
+              id="email"
+              name="email"
               type="text"
-              placeholder="votre@email.com ou 06..."
+              placeholder="votre@email.com"
               className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
               required
             />
@@ -78,6 +77,7 @@ export default function Login() {
             <div className="relative">
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 className="w-full px-4 py-2.5 sm:py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
@@ -120,9 +120,14 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-[#D4AF37] text-[#0B0D12] px-8 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:bg-[#F5D76E] transition-all shadow-lg shadow-yellow-900/30 hover:shadow-yellow-900/50"
+            disabled={loading}
+            className="w-full bg-[#D4AF37] text-[#0B0D12] px-8 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:bg-[#F5D76E] transition-all shadow-lg shadow-yellow-900/30 hover:shadow-yellow-900/50 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
           >
-            Se connecter
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "Se connecter"
+            )}
           </button>
         </form>
 
