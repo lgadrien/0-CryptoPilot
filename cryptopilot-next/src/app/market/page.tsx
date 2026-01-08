@@ -123,8 +123,8 @@ const MarketChart = ({ coinId, color }: { coinId: string; color: string }) => {
                   boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
                 }}
                 itemStyle={{ color: "#fff" }}
-                formatter={(value: number) => [
-                  `$${value.toLocaleString()}`,
+                formatter={(value: any) => [
+                  `$${Number(value).toLocaleString()}`,
                   "Prix",
                 ]}
                 labelFormatter={(label) => label}
@@ -160,33 +160,38 @@ export default function MarketPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
 
-  const fetchMarketData = useCallback(
-    async (reset = false) => {
-      const pageToLoad = reset ? 1 : page;
-      if (reset) {
-        setLoading(true);
-        setCryptos([]);
-        setExpandedId(null);
+  // Charger les données (Pagination Classique)
+  const fetchMarketData = useCallback(async (targetPage = 1) => {
+    setLoading(true);
+    setExpandedId(null); // Close accordion on page change
+
+    try {
+      const data = await cryptoService.getTopCryptos(targetPage, 50);
+      if (!data || data.length === 0) {
+        setHasMore(false);
       } else {
-        setLoadingMore(true);
+        setCryptos(data); // REPLACE data (No append)
+        setPage(targetPage);
+        setHasMore(data.length === 50);
       }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      // Remonter en haut de page
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
 
-      try {
-        const data = await cryptoService.getTopCryptos(pageToLoad, 50);
-        if (!data || data.length < 50) setHasMore(false);
-
-        setCryptos((prev) => (reset ? data : [...prev, ...data]));
-        setPage((prev) => (reset ? 2 : prev + 1));
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [page]
-  );
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    fetchMarketData(newPage);
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,6 +204,7 @@ export default function MarketPage() {
       const results = await cryptoService.searchCryptos(searchQuery);
       setCryptos(results);
       setHasMore(false);
+      setPage(1); // Reset page on search
     } catch (e) {
       console.error(e);
     } finally {
@@ -212,61 +218,108 @@ export default function MarketPage() {
     setPage(1);
     setHasMore(true);
     setExpandedId(null);
-    fetchMarketData(true);
+    fetchMarketData(1);
   };
 
   const toggleRow = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleSort = (key: string) => {
+    let direction: "asc" | "desc" = "desc";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "desc"
+    ) {
+      direction = "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedCryptos = React.useMemo(() => {
+    if (!sortConfig) return cryptos;
+    return [...cryptos].sort((a, b) => {
+      const valA =
+        a[sortConfig.key] !== undefined && a[sortConfig.key] !== null
+          ? a[sortConfig.key]
+          : -Infinity;
+      const valB =
+        b[sortConfig.key] !== undefined && b[sortConfig.key] !== null
+          ? b[sortConfig.key]
+          : -Infinity;
+      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [cryptos, sortConfig]);
+
+  const SortIcon = ({ colKey }: { colKey: string }) => {
+    if (sortConfig?.key !== colKey)
+      return <span className="ml-1 text-gray-300 dark:text-gray-600">↕</span>;
+    return sortConfig.direction === "asc" ? (
+      <span className="ml-1 text-[#D4AF37]">↑</span>
+    ) : (
+      <span className="ml-1 text-[#D4AF37]">↓</span>
+    );
+  };
+
   useEffect(() => {
-    fetchMarketData(true);
+    fetchMarketData(1);
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 md:px-4 py-8">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Marché Crypto
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Cours en temps réel, capitalisation et volume. Cliquez pour voir le
-            graph.
+          <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
+            Cours en temps réel, capitalisation et volume. Page {page}.
           </p>
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex w-full md:w-auto gap-2">
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-col sm:flex-row w-full md:w-auto gap-2"
+        >
           <div className="relative w-full md:w-64">
             <input
               type="text"
-              placeholder="Rechercher (ex: Pepe, Kaspa)..."
+              placeholder="Rechercher (ex: Pepe)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#1C1F26] border border-gray-200 dark:border-[#2A2D35] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all text-gray-900 dark:text-white"
+              className="w-full pl-10 pr-4 py-3 md:py-2 bg-white dark:bg-[#1C1F26] border border-gray-200 dark:border-[#2A2D35] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 transition-all text-gray-900 dark:text-white text-base"
             />
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-3.5 md:top-2.5 w-4 h-4 text-gray-400" />
           </div>
 
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="px-4 py-2 text-sm bg-gray-100 dark:bg-[#2A2D35] text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-[#353942] transition-colors"
-            >
-              Effacer
-            </button>
-          )}
+          <div className="flex gap-2">
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="flex-1 px-4 py-3 md:py-2 text-sm bg-gray-100 dark:bg-[#2A2D35] text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-[#353942] transition-colors"
+              >
+                Effacer
+              </button>
+            )}
 
-          <button
-            type="submit"
-            disabled={isSearching}
-            className="px-4 py-2 bg-[#D4AF37] text-black font-semibold rounded-xl hover:bg-[#F5D76E] transition-colors disabled:opacity-50"
-          >
-            {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : "Go"}
-          </button>
+            <button
+              type="submit"
+              disabled={isSearching}
+              className="flex-1 px-4 py-3 md:py-2 bg-[#D4AF37] text-black font-semibold rounded-xl hover:bg-[#F5D76E] transition-colors disabled:opacity-50 flex justify-center items-center"
+            >
+              {isSearching ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Go"
+              )}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -276,45 +329,63 @@ export default function MarketPage() {
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-50 dark:bg-[#15171C] border-b border-gray-100 dark:border-[#2A2D35]">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-12">
-                  #
+                <th
+                  className="px-2 md:px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-8 md:w-12 hidden sm:table-cell cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("market_cap_rank")}
+                >
+                  # <SortIcon colKey="market_cap_rank" />
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actif
+                <th
+                  className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("name")}
+                >
+                  Actif <SortIcon colKey="name" />
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Prix
+                <th
+                  className="px-2 md:px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("current_price")}
+                >
+                  Prix <SortIcon colKey="current_price" />
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  24h %
+                <th
+                  className="px-2 md:px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("price_change_percentage_24h")}
+                >
+                  24h <SortIcon colKey="price_change_percentage_24h" />
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                  Market Cap
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("market_cap")}
+                >
+                  Market Cap <SortIcon colKey="market_cap" />
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
-                  Volume 24h
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell cursor-pointer hover:bg-gray-100 dark:hover:bg-[#20232b]"
+                  onClick={() => handleSort("total_volume")}
+                >
+                  Volume 24h <SortIcon colKey="total_volume" />
                 </th>
-                <th className="w-10"></th>
+                <th className="w-8 md:w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#2A2D35]">
               {loading ? (
                 [...Array(10)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4">
+                    <td className="px-2 md:px-6 py-4 hidden sm:table-cell">
                       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 md:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-2 md:px-6 py-4 text-right">
                       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 ml-auto"></div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12 ml-auto"></div>
+                    <td className="px-2 md:px-6 py-4 text-right">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-10 ml-auto"></div>
                     </td>
                     <td className="px-6 py-4 text-right hidden md:table-cell">
                       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 ml-auto"></div>
@@ -325,7 +396,7 @@ export default function MarketPage() {
                     <td></td>
                   </tr>
                 ))
-              ) : cryptos.length === 0 ? (
+              ) : sortedCryptos.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
@@ -335,7 +406,7 @@ export default function MarketPage() {
                   </td>
                 </tr>
               ) : (
-                cryptos.map((coin, index) => (
+                sortedCryptos.map((coin, index) => (
                   <React.Fragment key={`${coin.id}-${index}`}>
                     <tr
                       onClick={() => toggleRow(coin.id)}
@@ -345,38 +416,38 @@ export default function MarketPage() {
                           : ""
                       }`}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 w-12">
+                      <td className="px-2 md:px-6 py-4 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400 w-8 md:w-12 hidden sm:table-cell">
                         {coin.market_cap_rank || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
+                      <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 md:gap-3">
                           <img
                             src={coin.image}
                             alt={coin.name}
-                            className="w-8 h-8 rounded-full shadow-sm group-hover:scale-110 transition-transform"
+                            className="w-6 h-6 md:w-8 md:h-8 rounded-full shadow-sm group-hover:scale-110 transition-transform"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src =
                                 "https://assets.coingecko.com/coins/images/1/large/bitcoin.png";
                             }}
                           />
-                          <div>
-                            <div className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">
                               {coin.name}
-                              <span className="text-xs font-normal text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                                {coin.symbol.toUpperCase()}
-                              </span>
-                            </div>
+                            </span>
+                            <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
+                              {coin.symbol?.toUpperCase()}
+                            </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-gray-100">
+                      <td className="px-2 md:px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-gray-100">
                         $
                         {coin.current_price?.toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 8,
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
+                      <td className="px-2 md:px-6 py-4 whitespace-nowrap text-right text-xs md:text-sm font-semibold">
                         <div
                           className={`flex items-center justify-end gap-1 ${
                             (coin.price_change_percentage_24h || 0) >= 0
@@ -384,14 +455,16 @@ export default function MarketPage() {
                               : "text-red-500"
                           }`}
                         >
-                          {(coin.price_change_percentage_24h || 0) >= 0 ? (
-                            <TrendingUp size={14} />
-                          ) : (
-                            <TrendingDown size={14} />
-                          )}
+                          <span className="hidden md:inline">
+                            {(coin.price_change_percentage_24h || 0) >= 0 ? (
+                              <TrendingUp size={14} />
+                            ) : (
+                              <TrendingDown size={14} />
+                            )}
+                          </span>
                           {Math.abs(
                             coin.price_change_percentage_24h || 0
-                          ).toFixed(2)}
+                          ).toFixed(1)}
                           %
                         </div>
                       </td>
@@ -401,7 +474,7 @@ export default function MarketPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-400 hidden lg:table-cell">
                         ${coin.total_volume?.toLocaleString("en-US")}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-2 md:px-6 py-4 text-center w-8 md:w-10">
                         {expandedId === coin.id ? (
                           <ChevronUp className="w-4 h-4 text-gray-400" />
                         ) : (
@@ -412,15 +485,29 @@ export default function MarketPage() {
 
                     {expandedId === coin.id && (
                       <tr className="bg-gray-50 dark:bg-[#20232b] animate-fade-in">
-                        <td colSpan={7} className="px-6 pb-6 pt-0">
+                        <td
+                          colSpan={7}
+                          className="px-2 md:px-6 pb-4 md:pb-6 pt-0"
+                        >
                           <div className="border-t border-gray-100 dark:border-[#2A2D35] pt-4">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
-                              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              <h3 className="text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 Prix -{" "}
                                 <span className="text-[#D4AF37]">
                                   {coin.name}
                                 </span>
                               </h3>
+                              {/* Mobile Extra Info */}
+                              <div className="md:hidden flex flex-wrap gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <div>
+                                  <span className="font-bold">Mkt Cap:</span> $
+                                  {coin.market_cap?.toLocaleString()}
+                                </div>
+                                <div>
+                                  <span className="font-bold">Vol 24h:</span> $
+                                  {coin.total_volume?.toLocaleString()}
+                                </div>
+                              </div>
                             </div>
                             <MarketChart
                               coinId={coin.id}
@@ -440,20 +527,30 @@ export default function MarketPage() {
             </tbody>
           </table>
 
-          {hasMore && !searchQuery && !loading && (
-            <div className="p-4 flex justify-center border-t border-gray-100 dark:border-[#2A2D35]">
-              <button
-                onClick={() => fetchMarketData(false)}
-                disabled={loadingMore}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-[#2A2D35] hover:bg-gray-200 dark:hover:bg-[#353942] text-gray-700 dark:text-white rounded-xl transition-all font-semibold disabled:opacity-50"
-              >
-                {loadingMore ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Plus className="w-5 h-5" />
-                )}
-                Charger plus (Top {page * 50 + 50})
-              </button>
+          {/* PAGINATION CONTROLS */}
+          {!searchQuery && !loading && (
+            <div className="p-4 flex flex-col sm:flex-row items-center justify-center gap-4 border-t border-gray-100 dark:border-[#2A2D35]">
+              <div className="flex justify-between w-full sm:w-auto gap-4">
+                <button
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  className="flex-1 sm:flex-none px-4 py-3 md:py-2 text-sm font-semibold bg-gray-100 dark:bg-[#2A2D35] text-gray-700 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-[#353942] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Précédent
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={!hasMore}
+                  className="flex-1 sm:flex-none px-4 py-3 md:py-2 text-sm font-semibold bg-gray-100 dark:bg-[#2A2D35] text-gray-700 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-[#353942] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Suivant
+                </button>
+              </div>
+
+              <span className="text-sm font-bold text-gray-900 dark:text-white">
+                Page {page}
+              </span>
             </div>
           )}
         </div>

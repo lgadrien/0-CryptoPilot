@@ -149,19 +149,35 @@ class CryptoService {
 
       if (!searchData.coins || searchData.coins.length === 0) return [];
 
-      // 2. Extract IDs (limit to top 20 matches to avoid overload)
-      const ids = searchData.coins
-        .slice(0, 20)
-        .map((c: any) => c.id)
-        .join(",");
+      // 2. Extract IDs (limit to top 10 matches to avoid rate limit)
+      const topCoins = searchData.coins.slice(0, 10);
+      const ids = topCoins.map((c: any) => c.id).join(",");
 
       // 3. Get Market Data for these IDs
-      const marketRes = await fetch(
-        `/api/crypto/market-data?vs_currency=usd&ids=${ids}`
-      );
-      if (!marketRes.ok) throw new Error("Market data fetch failed");
-
-      return await marketRes.json();
+      try {
+        const marketRes = await fetch(
+          `/api/crypto/market-data?vs_currency=usd&ids=${ids}`
+        );
+        if (!marketRes.ok) throw new Error("Market data fetch failed");
+        return await marketRes.json();
+      } catch (marketError) {
+        console.warn(
+          "Market data fetch failed (Rate Limit?), returning basic search results.",
+          marketError
+        );
+        // Fallback: Return basic search data map to market format
+        return topCoins.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          symbol: c.symbol,
+          image: c.large || c.thumb,
+          market_cap_rank: c.market_cap_rank,
+          current_price: null, // Price unavailable
+          price_change_percentage_24h: null,
+          market_cap: null,
+          total_volume: null,
+        }));
+      }
     } catch (error) {
       console.error("Erreur searchCryptos:", error);
       return [];
