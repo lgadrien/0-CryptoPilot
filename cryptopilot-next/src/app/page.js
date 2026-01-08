@@ -5,54 +5,6 @@ import CryptoTicker from "../components/layout/CryptoTicker";
 import { TrendingUp, Wallet, Zap } from "lucide-react";
 import { useState, useEffect, useMemo, memo } from "react";
 
-const cryptoLogos = [
-  {
-    src: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png",
-    size: "w-24 h-24",
-    float: "animate-float-1",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-    size: "w-20 h-20",
-    float: "animate-float-2",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/325/large/Tether.png",
-    size: "w-20 h-20",
-    float: "animate-float-3",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/975/large/cardano.png",
-    size: "w-16 h-16",
-    float: "animate-float-4",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
-    size: "w-20 h-20",
-    float: "animate-float-5",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/4128/large/solana.png",
-    size: "w-18 h-18",
-    float: "animate-float-1",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/22617/large/astr.png",
-    size: "w-20 h-20",
-    float: "animate-float-2",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/17810/large/asterdex.png",
-    size: "w-18 h-18",
-    float: "animate-float-3",
-  },
-  {
-    src: "https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png",
-    size: "w-20 h-20",
-    float: "animate-float-4",
-  },
-];
-
 // Composant Feature Card mémorisé
 const FeatureCard = memo(({ icon: Icon, title, description }) => (
   <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/80 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-gray-200 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
@@ -86,8 +38,28 @@ CryptoLogo.displayName = "CryptoLogo";
 
 export default function Home() {
   const [logoPositions, setLogoPositions] = useState([]);
+  const [cryptoLogos, setCryptoLogos] = useState([]);
 
   useEffect(() => {
+    // Fetch Trending Coins
+    const fetchTrending = async () => {
+      try {
+        const res = await fetch("/api/crypto/trending");
+        if (res.ok) {
+          const data = await res.json();
+          setCryptoLogos(data);
+          generatePositions(data);
+        }
+      } catch (e) {
+        console.error("Failed to load trending logos", e);
+      }
+    };
+
+    fetchTrending();
+  }, []);
+
+  // Générer des positions aléatoires sans collision
+  const generatePositions = (logos) => {
     // Fonction pour vérifier si deux positions se chevauchent
     const checkCollision = (pos1, pos2, minDistance = 15) => {
       // Convertir les positions en coordonnées numériques
@@ -108,11 +80,10 @@ export default function Home() {
       return distance < minDistance;
     };
 
-    // Générer des positions aléatoires sans collision
     const positions = [];
     const maxAttempts = 100;
 
-    for (let i = 0; i < cryptoLogos.length; i++) {
+    for (let i = 0; i < logos.length; i++) {
       let newPosition;
       let hasCollision = true;
       let tryCount = 0;
@@ -139,7 +110,7 @@ export default function Home() {
     }
 
     setLogoPositions(positions);
-  }, []);
+  };
 
   // Mémoriser les features pour éviter les re-renders
   const features = useMemo(
