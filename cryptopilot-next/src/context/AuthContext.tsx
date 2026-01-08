@@ -25,7 +25,9 @@ interface AuthContextType {
   addWallet: (wallet: Wallet) => Promise<void>;
   removeWallet: (address: string) => Promise<void>;
   loginWithMetaMask: (address: string, chainId: string) => void;
+  loginWithMetaMask: (address: string, chainId: string) => void;
   loginWithPhantom: (address: string) => void;
+  updateProfile: (data: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,38 +46,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 1. Initial Load & Supabase Listener
   useEffect(() => {
     const initAuth = async () => {
-      // Check Supabase Session
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        // Check Supabase Session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session?.user) {
-        // Authenticated with Supabase
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          ...(session.user.user_metadata as any),
-        });
-        setIsAuthenticated(true);
-        setAuthMethod("traditional");
-        await fetchWallets(session.user.id);
-      } else {
-        // Check LocalStorage for Guest Mode
-        const localAuth = localStorage.getItem("isAuthenticated");
-        if (localAuth === "true") {
-          const savedUser = localStorage.getItem("user");
-          const savedMethod = localStorage.getItem("authMethod");
-          const savedWallets = localStorage.getItem("linkedWallets");
-
-          if (savedUser) setUser(JSON.parse(savedUser));
-          if (savedMethod) setAuthMethod(savedMethod ?? "traditional");
-          if (savedWallets) setLinkedWallets(JSON.parse(savedWallets));
-
+        if (session?.user) {
+          // Authenticated with Supabase
+          console.log("Auth: Restored Supabase Session", session.user.email);
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            ...(session.user.user_metadata as any),
+          });
           setIsAuthenticated(true);
+          setAuthMethod("traditional");
+          await fetchWallets(session.user.id);
+        } else {
+          // Check LocalStorage for Guest Mode
+          const localAuth = localStorage.getItem("isAuthenticated");
+          if (localAuth === "true") {
+            console.log("Auth: Restored Guest Session");
+            const savedUser = localStorage.getItem("user");
+            const savedMethod = localStorage.getItem("authMethod");
+            const savedWallets = localStorage.getItem("linkedWallets");
+
+            if (savedUser) {
+              try {
+                setUser(JSON.parse(savedUser));
+              } catch (e) {
+                console.error("Error parsing savedUser", e);
+              }
+            }
+            if (savedMethod) setAuthMethod(savedMethod ?? "traditional");
+            if (savedWallets) {
+              try {
+                setLinkedWallets(JSON.parse(savedWallets));
+              } catch (e) {
+                console.error("Error parsing savedWallets", e);
+              }
+            }
+
+            setIsAuthenticated(true);
+          }
         }
+        setWalletAddress(localStorage.getItem("walletAddress"));
+      } catch (error) {
+        console.error("Auth Initialization Error:", error);
+      } finally {
+        setLoading(false);
       }
-      setWalletAddress(localStorage.getItem("walletAddress"));
-      setLoading(false);
     };
 
     initAuth();
@@ -309,6 +330,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [addWallet]
   );
 
+  const updateProfile = useCallback(
+    async (updates: any) => {
+      if (user?.id) {
+        // Supabase Update
+        const { error } = await supabase.auth.updateUser({
+          data: updates,
+        });
+        if (error) throw error;
+        // Update local state immediately
+        setUser((prev) => (prev ? { ...prev, ...updates } : null));
+      } else {
+        // Guest Update
+        const updatedUser = { ...user, ...updates };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+    },
+    [user, supabase]
+  );
+
   const value = useMemo(
     () => ({
       isAuthenticated,
@@ -324,6 +365,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       removeWallet,
       loginWithMetaMask,
       loginWithPhantom,
+      updateProfile,
     }),
     [
       isAuthenticated,
@@ -335,10 +377,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
-      addWallet,
-      removeWallet,
       loginWithMetaMask,
       loginWithPhantom,
+      updateProfile,
     ]
   );
 

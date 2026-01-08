@@ -133,6 +133,12 @@ function Header() {
                   Dashboard
                 </NavLink>
                 <NavLink
+                  to="/profile"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                >
+                  Profil
+                </NavLink>
+                <NavLink
                   to="/pricing"
                   className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
                 >
@@ -196,6 +202,14 @@ function Header() {
                       </div>
 
                       <div className="p-1">
+                        <NavLink
+                          to="/profile"
+                          onClick={toggleUserMenu}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          Mon Profil
+                        </NavLink>
                         <NavLink
                           to="/dashboard"
                           onClick={toggleUserMenu}
@@ -297,6 +311,14 @@ function Header() {
                   Dashboard
                 </NavLink>
                 <NavLink
+                  to="/profile"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
+                  icon={User}
+                >
+                  Mon Profil
+                </NavLink>
+                <NavLink
                   to="/pricing"
                   onClick={closeMobileMenu}
                   className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
@@ -309,19 +331,21 @@ function Header() {
 
             {isAuthenticated ? (
               <div className="pt-4">
-                <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 dark:bg-[#1C1F26] rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#0B0D12]">
-                    <User className="w-5 h-5" />
+                <Link href="/profile" onClick={closeMobileMenu}>
+                  <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 dark:bg-[#1C1F26] rounded-xl active:scale-95 transition-transform cursor-pointer">
+                    <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#0B0D12]">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white">
+                        {user?.username || "Crypto Investor"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {user?.email || walletAddress}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900 dark:text-white">
-                      {user?.username || "Crypto Investor"}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user?.email || walletAddress}
-                    </p>
-                  </div>
-                </div>
+                </Link>
 
                 <button
                   onClick={handleLogout}
