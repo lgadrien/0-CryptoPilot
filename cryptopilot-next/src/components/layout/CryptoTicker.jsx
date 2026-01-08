@@ -12,33 +12,33 @@ const CryptoItem = memo(({ coin }) => (
   <div className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-800 dark:text-white">
     <Image
       src={coin.image}
-      alt={coin.name}
+      alt={coin.name || "coin"}
       width={20}
       height={20}
       className="w-4 h-4 sm:w-5 sm:h-5 rounded-full"
     />
     <span className="font-semibold text-[#D4AF37]">
-      {coin.symbol.toUpperCase()}
+      {coin.symbol?.toUpperCase() || ""}
     </span>
     <span className="hidden xs:inline">
-      ${coin.current_price.toLocaleString()}
+      ${coin.current_price?.toLocaleString() || "N/A"}
     </span>
     <span className="inline xs:hidden">
       $
-      {coin.current_price.toLocaleString("en", {
+      {coin.current_price?.toLocaleString("en", {
         notation: "compact",
         maximumFractionDigits: 1,
-      })}
+      }) || "N/A"}
     </span>
     <span
       className={`text-xs sm:text-sm ${
-        coin.price_change_percentage_24h >= 0
+        (coin.price_change_percentage_24h || 0) >= 0
           ? "text-green-400"
           : "text-red-500"
       }`}
     >
-      {coin.price_change_percentage_24h >= 0 ? "" : ""}
-      {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
+      {(coin.price_change_percentage_24h || 0) >= 0 ? "+" : ""}
+      {Math.abs(coin.price_change_percentage_24h || 0).toFixed(2)}%
     </span>
   </div>
 ));
