@@ -16,48 +16,78 @@ class CryptoService {
 
   // Récupérer le prix d'une crypto en USD
   async getPrice(coinId: string) {
-    const cacheKey = `price_${coinId}`;
-    const cached = this.cache.get(cacheKey);
+    const res = await this.getPrices([coinId]);
+    return res[coinId] || { price: 0, change24h: 0 };
+  }
 
-    if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
-      return cached.data;
+  // Récupérer les prix de PLUSIEURS cryptos en une seule requête (Batching)
+  async getPrices(coinIds: string[]) {
+    // 1. Check cache for all IDs
+    const results: Record<string, any> = {};
+    const missingIds: string[] = [];
+
+    coinIds.forEach((id) => {
+      const cacheKey = `price_${id}`;
+      const cached = this.cache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
+        results[id] = cached.data;
+      } else {
+        missingIds.push(id);
+      }
+    });
+
+    if (missingIds.length === 0) {
+      return results;
     }
 
+    // 2. Fetch missing IDs
     try {
-      // Appel API interne
-      const response = await fetch(
-        `/api/crypto/price?ids=${coinId}&vs_currencies=usd`
-      );
+      // Chunk requests if too many (CoinGecko allows ~50 ids max per call usually)
+      const chunkSize = 50;
+      for (let i = 0; i < missingIds.length; i += chunkSize) {
+        const chunk = missingIds.slice(i, i + chunkSize);
+        const idsParam = chunk.join(",");
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn("Rate limit atteint (backend) pour CoinGecko API");
-          if (cached) return cached.data;
+        const response = await fetch(
+          `/api/crypto/price?ids=${idsParam}&vs_currencies=usd`
+        );
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            console.warn("Rate limit atteint. Utilisation cache si dispo.");
+            // Fallback cache périmé éventuel ou zéro
+            chunk.forEach((id) => {
+              const oldCache = this.cache.get(`price_${id}`);
+              if (oldCache) results[id] = oldCache.data;
+            });
+            continue;
+          }
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
-        throw new Error(`Erreur HTTP: ${response.status}`);
+
+        const data = await response.json();
+
+        // Update cache & results
+        chunk.forEach((id) => {
+          if (data[id]) {
+            const result = {
+              price: data[id].usd,
+              change24h: data[id].usd_24h_change || 0,
+            };
+            this.cache.set(`price_${id}`, {
+              data: result,
+              timestamp: Date.now(),
+            });
+            results[id] = result;
+          }
+        });
       }
 
-      const data = await response.json();
-
-      if (!data[coinId]) {
-        throw new Error(`Aucune donnée trouvée pour ${coinId}`);
-      }
-
-      const result = {
-        price: data[coinId].usd,
-        change24h: data[coinId].usd_24h_change || 0,
-      };
-
-      this.cache.set(cacheKey, {
-        data: result,
-        timestamp: Date.now(),
-      });
-
-      return result;
+      return results;
     } catch (error) {
-      console.error("Erreur getPrice:", error);
-      if (cached) return cached.data;
-      throw error;
+      console.error("Erreur getPrices batch:", error);
+      // Return what we have
+      return results;
     }
   }
 

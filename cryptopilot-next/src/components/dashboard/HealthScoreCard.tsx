@@ -1,28 +1,48 @@
 "use client";
 import React, { useMemo } from "react";
 import Link from "next/link";
-import { Shield, Lock, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { Shield, Lock, AlertTriangle, Info } from "lucide-react";
+
+interface Asset {
+  symbol: string;
+  value: number;
+}
+
+interface Recommendation {
+  type: "danger" | "warning" | "success" | "info";
+  text: string;
+}
+
+interface HealthScoreCardProps {
+  assets?: Asset[];
+  isPremium?: boolean;
+}
 
 /**
  * HealthScoreCard Component
  * Analyse la santé du portefeuille et incite à l'upgrade "Sovereign".
- *
- * @param {Array} assets - Liste des actifs (ex: [{ symbol: 'BTC', value: 5000 }, ...])
- * @param {Boolean} isPremium - Si true, débloque l'audit complet.
  */
-export default function HealthScoreCard({ assets = [], isPremium = false }) {
+export default function HealthScoreCard({
+  assets = [],
+  isPremium = false,
+}: HealthScoreCardProps) {
   // --- 1. LOGIQUE MÉTIER (CALCUL DU SCORE) ---
   const { score, status, color, recommendations } = useMemo(() => {
     let calculatedScore = 0;
     const totalValue = assets.reduce((sum, a) => sum + (a.value || 0), 0);
-    const recs = []; // Recommandations
+    const recs: Recommendation[] = [];
 
     if (totalValue === 0) {
       return {
         score: 0,
         status: "Inconnu",
         color: "text-gray-400",
-        recommendations: ["Ajoutez des actifs pour obtenir votre audit."],
+        recommendations: [
+          {
+            type: "info",
+            text: "Ajoutez des actifs pour obtenir votre audit.",
+          },
+        ] as Recommendation[],
       };
     }
 
@@ -65,7 +85,6 @@ export default function HealthScoreCard({ assets = [], isPremium = false }) {
     // Règle 2 : Gestion du Risque (Stables)
     if (stablePct >= 10) {
       calculatedScore += 10;
-      // Bonus caché : si > 20% en bear market (optionnel, restons simple)
     } else {
       recs.push({
         type: "warning",
@@ -212,11 +231,10 @@ export default function HealthScoreCard({ assets = [], isPremium = false }) {
           {/* LISTE DES RECOMMANDATIONS (PAYWALL) */}
           <div className="space-y-3 relative mt-6">
             {recommendations.map((rec, index) => {
-              // Logique du flou : on montre le 1er, on floute les autres si pas premium
+              // Logique du flou
               const isLocked = !isPremium && index > 0;
 
               if (isLocked && index === 1) {
-                // Le container du Paywall remplace les items 2 et 3
                 return (
                   <div
                     key="paywall"
@@ -241,9 +259,8 @@ export default function HealthScoreCard({ assets = [], isPremium = false }) {
                 );
               }
 
-              if (isLocked) return null; // Ne pas render les items cachés sous le paywall overlay
+              if (isLocked) return null;
 
-              // Item visible (recommandation 1)
               return (
                 <div
                   key={index}
