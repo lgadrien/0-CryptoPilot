@@ -85,7 +85,7 @@ function Header() {
   return (
     <header
       ref={headerRef}
-      className="w-full bg-white dark:bg-[#0B0D12] border-b border-gray-200 dark:border-[#1C1F26] transition-colors duration-300 sticky top-0 z-50 shadow-sm"
+      className="w-full bg-white dark:bg-[#0B0D12] border-b border-gray-200 dark:border-[#1C1F26] sticky top-0 z-50 shadow-sm"
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-6 h-16 md:h-20 font-[Nunito]">
         {/* LEFT: Logo */}
@@ -100,10 +100,10 @@ function Header() {
               alt="CryptoPilot"
               width={36}
               height={36}
-              className="w-8 h-8 md:w-9 md:h-9 transition-all duration-300 group-hover:rotate-12 group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]"
+              className="w-8 h-8 md:w-9 md:h-9 group-hover:rotate-12 group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]"
               priority
             />
-            <h1 className="text-lg md:text-2xl font-bold text-[#D4AF37] tracking-wide transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+            <h1 className="text-lg md:text-2xl font-bold text-[#D4AF37] tracking-wide group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
               CryptoPilot
             </h1>
           </Link>
@@ -116,19 +116,19 @@ function Header() {
               <>
                 <NavLink
                   to="/"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Home
                 </NavLink>
                 <NavLink
                   to="/market"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Marché Crypto
                 </NavLink>
                 <NavLink
                   to="/pricing"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Tarifs
                 </NavLink>
@@ -137,25 +137,25 @@ function Header() {
               <>
                 <NavLink
                   to="/dashboard"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Dashboard
                 </NavLink>
                 <NavLink
                   to="/market"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Marché
                 </NavLink>
                 <NavLink
                   to="/profile"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Profil
                 </NavLink>
                 <NavLink
                   to="/pricing"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37] transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
                 >
                   Offres
                 </NavLink>
@@ -172,7 +172,7 @@ function Header() {
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 {/* Notification Badge */}
-                <button className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
+                <button className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
                   <Bell className="w-5 h-5" />
                   {notificationCount > 0 && (
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
@@ -185,7 +185,7 @@ function Header() {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={toggleUserMenu}
-                    className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full border border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] transition-all bg-gray-50 dark:bg-[#15171C]"
+                    className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full border border-gray-200 dark:border-[#2A2D35] hover:border-[#D4AF37] bg-gray-50 dark:bg-[#15171C]"
                   >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F5D76E] flex items-center justify-center text-white shadow-sm">
                       {authMethod === "metamask" || authMethod === "phantom" ? (
@@ -220,7 +220,7 @@ function Header() {
                         <NavLink
                           to="/profile"
                           onClick={toggleUserMenu}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35]"
                         >
                           <User className="w-4 h-4" />
                           Mon Profil
@@ -229,14 +229,14 @@ function Header() {
                           to="/dashboard"
                           onClick={toggleUserMenu}
                           icon={LayoutDashboard}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35]"
                         >
                           Mon Dashboard
                         </NavLink>
                         <NavLink
                           to="/pricing"
                           onClick={toggleUserMenu}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2A2D35]"
                         >
                           <span className="w-5 h-5 flex items-center justify-center">
                             💎
@@ -248,7 +248,7 @@ function Header() {
                       <div className="p-1 border-t border-gray-100 dark:border-[#2A2D35]">
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10"
                         >
                           <LogOut className="w-4 h-4" />
                           Se déconnecter
@@ -262,13 +262,13 @@ function Header() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="text-gray-600 dark:text-gray-300 font-semibold hover:text-[#D4AF37] px-3 py-2 transition-colors"
+                  className="text-gray-600 dark:text-gray-300 font-semibold hover:text-[#D4AF37] px-3 py-2"
                 >
                   Connexion
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-[#D4AF37] text-[#0B0D12] px-5 py-2.5 rounded-lg font-bold hover:bg-[#F5D76E] shadow-lg shadow-[#D4AF37]/20 transition-all transform hover:-translate-y-0.5"
+                  className="bg-[#D4AF37] text-[#0B0D12] px-5 py-2.5 rounded-lg font-bold hover:bg-[#F5D76E] shadow-lg shadow-[#D4AF37]/20 transform hover:-translate-y-0.5"
                 >
                   Démarrer
                 </Link>
@@ -282,7 +282,7 @@ function Header() {
           <ThemeToggle />
           <button
             onClick={toggleMobileMenu}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:text-[#D4AF37] transition-colors"
+            className="p-2 text-gray-600 dark:text-gray-300 hover:text-[#D4AF37]"
             aria-label="Menu"
           >
             {showMobileMenu ? (
@@ -362,7 +362,7 @@ function Header() {
             {isAuthenticated ? (
               <div className="pt-4">
                 <Link href="/profile" onClick={closeMobileMenu}>
-                  <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 dark:bg-[#1C1F26] rounded-xl active:scale-95 transition-transform cursor-pointer">
+                  <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 dark:bg-[#1C1F26] rounded-xl active:scale-95 cursor-pointer">
                     <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#0B0D12]">
                       <User className="w-5 h-5" />
                     </div>
