@@ -43,13 +43,13 @@ export default function Login() {
   };
 
   return (
-    <div className="flex-1 w-full flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12] relative py-12 transition-colors duration-300">
+    <div className="flex-1 w-full flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12] relative py-12">
       {/* Background Decor */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-40 dark:opacity-20 pointer-events-none"></div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gray-50 via-transparent to-gray-50 dark:from-[#0B0D12] dark:via-transparent dark:to-[#0B0D12] pointer-events-none opacity-80"></div>
 
       {/* Main Card */}
-      <div className="relative z-10 w-full max-w-md bg-white/80 dark:bg-[#1C1F26]/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl p-8 mx-4 transition-colors duration-300">
+      <div className="relative z-10 w-full max-w-md bg-white/80 dark:bg-[#1C1F26]/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl p-8 mx-4">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-[#D4AF37] mb-2 tracking-tight">
             Connexion
