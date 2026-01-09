@@ -153,12 +153,6 @@ function Header() {
                 >
                   Profil
                 </NavLink>
-                <NavLink
-                  to="/pricing"
-                  className="text-gray-600 dark:text-gray-300 font-bold hover:text-[#D4AF37]"
-                >
-                  Offres
-                </NavLink>
               </>
             )}
           </nav>
@@ -347,14 +341,6 @@ function Header() {
                   icon={User}
                 >
                   Mon Profil
-                </NavLink>
-                <NavLink
-                  to="/pricing"
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-4 text-lg font-medium text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-[#1C1F26] pb-4"
-                  icon={null}
-                >
-                  💎 Offres
                 </NavLink>
               </>
             )}
