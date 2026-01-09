@@ -23,7 +23,11 @@ export default function FinanceDashboard() {
     currency,
     ghostMode,
   } = usePortfolio();
-  const { connectMetaMask } = useMetaMask();
+  const {
+    connectMetaMask,
+    account: metaMaskAccount,
+    isConnected: isMetaMaskConnected,
+  } = useMetaMask();
   const { connectPhantom } = usePhantom();
 
   const [performanceData, setPerformanceData] = useState([]);
@@ -32,24 +36,13 @@ export default function FinanceDashboard() {
   // Handlers for Wallet Connection
   const handleLinkMetaMask = async () => {
     try {
-      if (typeof window !== "undefined" && window.ethereum) {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
+      const res = await connectMetaMask();
+      if (res && res.account) {
+        addWallet({
+          type: "metamask",
+          address: res.account,
+          connectedAt: new Date().toISOString(),
         });
-        if (accounts && accounts[0])
-          addWallet({
-            type: "metamask",
-            address: accounts[0],
-            connectedAt: new Date().toISOString(),
-          });
-      } else {
-        const res = await connectMetaMask();
-        if (res)
-          addWallet({
-            type: "metamask",
-            address: res.account,
-            connectedAt: new Date().toISOString(),
-          });
       }
     } catch (e) {
       console.error(e);
@@ -81,6 +74,22 @@ export default function FinanceDashboard() {
       loadPerformanceData();
     }
   }, [linkedWallets, loadPerformanceData]);
+
+  // Auto-Link MetaMask if eager connect succeeds
+  useEffect(() => {
+    if (isMetaMaskConnected && metaMaskAccount) {
+      const exists = linkedWallets.some(
+        (w) => w.address.toLowerCase() === metaMaskAccount.toLowerCase()
+      );
+      if (!exists) {
+        addWallet({
+          type: "metamask",
+          address: metaMaskAccount,
+          connectedAt: new Date().toISOString(),
+        });
+      }
+    }
+  }, [isMetaMaskConnected, metaMaskAccount, linkedWallets, addWallet]);
 
   // Empty State
   if (linkedWallets.length === 0 && !walletAddress) {

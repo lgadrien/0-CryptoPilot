@@ -9,8 +9,19 @@ export interface User {
   id?: string;
   email?: string;
   full_name?: string;
+  username?: string;
+  avatar_url?: string;
   phone?: string;
   type?: "guest" | "authenticated";
+  preferences?: {
+    currency?: string;
+    ghost_mode?: boolean;
+    theme?: string;
+    notifications?: boolean;
+    [key: string]: any;
+  };
+  plan_tier?: "free" | "sovereign";
+  [key: string]: any; // Allow extra metadata
 }
 
 export interface Crypto {

@@ -108,7 +108,7 @@ const RPC_CHAINS = [
 const PortfolioContext = createContext();
 
 export function PortfolioProvider({ children }) {
-  const { linkedWallets } = useAuth();
+  const { linkedWallets, user, isAuthenticated, updateProfile } = useAuth();
 
   // Settings State
   const [currency, setCurrency] = useState("usd");
@@ -127,24 +127,43 @@ export function PortfolioProvider({ children }) {
   const [cryptos, setCryptos] = useState([]);
   const [loadingCryptos, setLoadingCryptos] = useState(true);
 
-  // Load Settings on Mount
+  // Load Settings on Mount or User Change
   useEffect(() => {
-    const savedCurrency = localStorage.getItem("preferredCurrency");
-    const savedGhost = localStorage.getItem("ghostMode");
+    if (isAuthenticated && user?.preferences) {
+      // Load from DB
+      if (user.preferences.currency) setCurrency(user.preferences.currency);
+      if (user.preferences.ghost_mode !== undefined)
+        setGhostMode(user.preferences.ghost_mode);
+    } else {
+      // Load from LocalStorage (Guest)
+      const savedCurrency = localStorage.getItem("preferredCurrency");
+      const savedGhost = localStorage.getItem("ghostMode");
 
-    if (savedCurrency) setCurrency(savedCurrency);
-    if (savedGhost) setGhostMode(savedGhost === "true");
-  }, []);
+      if (savedCurrency) setCurrency(savedCurrency);
+      if (savedGhost) setGhostMode(savedGhost === "true");
+    }
+  }, [isAuthenticated, user]);
 
   const updateCurrency = (newCurrency) => {
     setCurrency(newCurrency);
     localStorage.setItem("preferredCurrency", newCurrency);
+
+    if (isAuthenticated && user) {
+      // Persist to DB
+      const updatedPrefs = { ...user.preferences, currency: newCurrency };
+      updateProfile({ preferences: updatedPrefs });
+    }
   };
 
   const toggleGhostMode = () => {
     setGhostMode((prev) => {
       const newVal = !prev;
       localStorage.setItem("ghostMode", String(newVal));
+
+      if (isAuthenticated && user) {
+        const updatedPrefs = { ...user.preferences, ghost_mode: newVal };
+        updateProfile({ preferences: updatedPrefs });
+      }
       return newVal;
     });
   };

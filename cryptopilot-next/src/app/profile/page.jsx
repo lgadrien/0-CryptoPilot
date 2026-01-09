@@ -12,13 +12,17 @@ import {
   Bell,
   LogOut,
   Zap,
+  Edit2,
+  Upload,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { usePortfolio } from "../../context/PortfolioContext";
 import WalletManager from "../../components/portfolio/WalletManager";
+import { createClient } from "../../lib/supabase/client";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const supabase = createClient();
   const {
     user,
     walletAddress,
@@ -35,8 +39,11 @@ export default function ProfilePage() {
 
   // États d'édition
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false);
   const [editName, setEditName] = useState("");
-  const [editAddress, setEditAddress] = useState("");
+  const [editAvatarUrl, setEditAvatarUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // New state for loading feedback
 
   // Données Utilisateur Réelles (Derivées du Context)
   const displayName =
@@ -44,27 +51,103 @@ export default function ProfilePage() {
     user?.user_metadata?.full_name ||
     user?.username ||
     "Investisseur";
-  const displayAddress = user?.user_metadata?.address || user?.address || ""; // Pas d'adresse par défaut
+  // Read location from profile first (mapped as address prop in user object if done?)
+  // Wait, user object in AuthContext puts everything top level.
+  // Let's assume user.location exists if mapped, or we read from metadata.
+  // Actually in AuthContext setUser we spread metadata. Let's fix user type mapping in AuthContext or read strictly.
   const displayIdentity = user?.email || walletAddress || "Anonyme";
+  const displayAvatar =
+    user?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const handleStartEdit = () => {
     setEditName(displayName);
-    setEditAddress(displayAddress);
     setIsEditing(true);
   };
 
-  const handleSaveProfile = async (e) => {
-    e.preventDefault(); // Empêcher reload form
+  const handleStartAvatarEdit = () => {
+    setEditAvatarUrl(displayAvatar || "");
+    setIsEditingAvatar(true);
+  };
+
+  const handleSaveAvatar = async (e) => {
+    e.preventDefault();
+    if (!editAvatarUrl) return;
+
     try {
+      setIsSaving(true);
+      await updateProfile({
+        avatar_url: editAvatarUrl,
+      });
+      setIsEditingAvatar(false);
+      setEditAvatarUrl(""); // Reset
+      // alert("Avatar mis à jour !"); // Optional feedback
+    } catch (e) {
+      alert("Erreur lors de la mise à jour de l'avatar");
+      console.error(e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!user?.id) {
+      alert("Vous devez être connecté pour uploader une image.");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      if (data?.publicUrl) {
+        setEditAvatarUrl(data.publicUrl);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Erreur d'upload (Vérifiez que le bucket 'avatars' existe).");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!editName.trim()) {
+      alert("Le nom ne peut pas être vide.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      console.log("Saving profile...", { editName });
+
       await updateProfile({
         username: editName,
         full_name: editName,
-        address: editAddress,
       });
+
+      console.log("Profile saved successfully.");
       setIsEditing(false);
     } catch (e) {
-      alert("Erreur lors de la mise à jour");
-      console.error(e);
+      console.error("Error saving profile:", e);
+      alert(
+        "Erreur lors de la sauvegarde : " + (e.message || "Erreur inconnue")
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -147,8 +230,8 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
+            <form onSubmit={handleSaveProfile} className="mt-6">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Nom d'affichage
                 </label>
@@ -160,23 +243,115 @@ export default function ProfilePage() {
                   placeholder="Votre nom"
                 />
               </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-6 py-2 bg-[#D4AF37] hover:bg-[#C5A028] text-white rounded-xl font-medium transition-all shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    "Enregistrer"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT AVATAR MODAL */}
+      {isEditingAvatar && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1C1F26] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-[#2A2D35] p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">Modifier la Photo</h2>
+              <button
+                onClick={() => setIsEditingAvatar(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAvatar} className="space-y-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#D4AF37] bg-gray-100 dark:bg-black/20">
+                  {editAvatarUrl ? (
+                    <img
+                      src={editAvatarUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/150";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-10 h-10 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Adresse (Optionnel)
+                  URL de l'image
                 </label>
-                <input
-                  type="text"
-                  value={editAddress}
-                  onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-                  placeholder="Paris, France..."
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editAvatarUrl}
+                    onChange={(e) => setEditAvatarUrl(e.target.value)}
+                    className="flex-1 px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                    placeholder="https://exemple.com/image.png"
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="avatar-upload"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    <label
+                      htmlFor="avatar-upload"
+                      className={`flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-[#2A2D35] hover:bg-gray-200 dark:hover:bg-[#32363F] text-gray-700 dark:text-gray-200 rounded-xl cursor-pointer transition-colors ${
+                        isUploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      title="Importer une image"
+                    >
+                      {isUploading ? (
+                        <span className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+                      ) : (
+                        <Upload className="w-5 h-5" />
+                      )}
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Collez un lien ou importez une image depuis votre appareil.
+                </p>
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => setIsEditingAvatar(false)}
                   className="flex-1 py-2.5 rounded-xl text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-[#2A2D35] transition-colors"
                 >
                   Annuler
@@ -201,8 +376,28 @@ export default function ProfilePage() {
 
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1C1F26] dark:to-[#0F1115] border-2 border-[#D4AF37] flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform duration-300">
-              <User className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+            <div className="relative group/avatar">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1C1F26] dark:to-[#0F1115] border-2 border-[#D4AF37] flex items-center justify-center shadow-lg transition-transform duration-300 overflow-hidden">
+                {displayAvatar ? (
+                  <img
+                    src={displayAvatar}
+                    alt={displayName}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none"; // Hide if broken
+                    }}
+                  />
+                ) : (
+                  <User className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                )}
+              </div>
+              <button
+                onClick={handleStartAvatarEdit}
+                className="absolute bottom-0 right-0 p-1.5 bg-[#D4AF37] text-black rounded-full shadow-md hover:bg-[#C5A028] transition-colors"
+                title="Modifier la photo"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Info */}
@@ -224,11 +419,6 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-500 font-mono bg-gray-100 dark:bg-black/20 px-2 py-1 rounded inline-block">
                   {displayIdentity}
                 </p>
-                {displayAddress && (
-                  <p className="text-sm text-gray-400 flex items-center justify-center md:justify-start gap-1">
-                    📍 {displayAddress}
-                  </p>
-                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2">

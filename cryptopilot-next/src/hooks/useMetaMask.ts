@@ -36,6 +36,7 @@ export function useMetaMask() {
     }
 
     try {
+      if (isConnecting) return null; // Prevent double trigger
       setIsConnecting(true);
       setError(null);
 
@@ -49,7 +50,6 @@ export function useMetaMask() {
 
       const account = accounts[0];
       const chainId = await window.ethereum.request({ method: "eth_chainId" });
-
       const provider = new BrowserProvider(window.ethereum);
 
       setAccount(account);
@@ -58,13 +58,20 @@ export function useMetaMask() {
 
       return { account, chainId, provider };
     } catch (err: any) {
-      console.error("Erreur connexion MetaMask:", err);
-      setError(err.message || "Erreur de connexion");
+      if (err.code === -32002) {
+        // "Already processing eth_requestAccounts"
+        setError(
+          "Veuillez ouvrir MetaMask pour compléter la demande précédente."
+        );
+      } else {
+        console.error("Erreur connexion MetaMask:", err);
+        setError(err.message || "Erreur de connexion");
+      }
       return null;
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [isConnecting]);
 
   const disconnect = useCallback(() => {
     setAccount(null);
@@ -73,9 +80,31 @@ export function useMetaMask() {
     setError(null);
   }, []);
 
-  // Gestion des événements (Passive)
+  // Gestion des événements et Auto-Connexion (Eager Connect)
   useEffect(() => {
     if (!isMetaMaskInstalled() || !window.ethereum) return;
+
+    const init = async () => {
+      try {
+        // Vérifier si déjà connecté (sans prompt)
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        if (accounts && accounts.length > 0) {
+          const acc = accounts[0];
+          const cId = await window.ethereum.request({ method: "eth_chainId" });
+          const prov = new BrowserProvider(window.ethereum);
+
+          setAccount(acc);
+          setChainId(cId);
+          setProvider(prov);
+        }
+      } catch (e) {
+        console.debug("Eager connect failed", e);
+      }
+    };
+
+    init();
 
     const handleAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) {
@@ -86,6 +115,7 @@ export function useMetaMask() {
         if (window.ethereum) {
           setProvider(new BrowserProvider(window.ethereum));
         }
+        window.location.reload();
       }
     };
 
@@ -94,18 +124,13 @@ export function useMetaMask() {
       window.location.reload();
     };
 
-    // On s'abonne aux events mais ON NE LANCE PAS d'initProvider automatique
-    // pour éviter les conflits d'extensions au chargement de page.
     try {
       if (window.ethereum.on) {
         window.ethereum.on("accountsChanged", handleAccountsChanged);
         window.ethereum.on("chainChanged", handleChainChanged);
       }
     } catch (e) {
-      console.warn(
-        "Impossible de s'abonner aux événements MetaMask (conflit potentiel)",
-        e
-      );
+      console.warn("Event subscription failed", e);
     }
 
     return () => {
@@ -119,7 +144,7 @@ export function useMetaMask() {
         }
       } catch (e) {}
     };
-  }, [account, disconnect]);
+  }, [disconnect]); // Removed account dependency to avoid loops
 
   // Obtenir le solde (via provider ou RPC public si besoin)
   const getBalance = useCallback(
