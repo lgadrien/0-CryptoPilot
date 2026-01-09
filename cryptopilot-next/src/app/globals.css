@@ -131,19 +131,14 @@ body {
   height: 100%;
 }
 
-/* Transition smooth pour le changement de thème */
-html {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Transition pour tous les éléments avec dark mode */
-* {
-  transition-property: background-color, border-color, color, fill, stroke,
-    box-shadow, opacity;
-  transition-duration: 0.3s;
-  transition-timing-function: ease;
+/* Buttery Smooth Theme Transition */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    transition-property: background-color, border-color, color, fill, stroke,
+      backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+    transition-duration: 300ms;
+  }
 }
