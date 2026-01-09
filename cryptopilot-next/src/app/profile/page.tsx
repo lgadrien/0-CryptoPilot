@@ -49,9 +49,16 @@ export default function ProfilePage() {
 
   // Données Utilisateur Réelles (Derivées du Context)
   const displayUsername =
-    user?.username || user?.user_metadata?.username || "Investisseur";
+    user?.username ||
+    user?.user_metadata?.username ||
+    user?.full_name ||
+    user?.user_metadata?.full_name ||
+    "Investisseur";
   const displayFullName =
-    user?.full_name || user?.user_metadata?.full_name || "";
+    user?.full_name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    "";
 
   const displayIdentity = user?.email || walletAddress || "Anonyme";
   const displayAvatar =
