@@ -1,8 +1,11 @@
 export interface Wallet {
+  id?: string; // from DB
   type: "metamask" | "phantom";
   address: string;
+  label?: string; // from DB
   chainId?: string | number | null;
   connectedAt?: string;
+  isPrimary?: boolean; // from DB
 }
 
 export interface User {
@@ -11,6 +14,7 @@ export interface User {
   full_name?: string;
   username?: string;
   avatar_url?: string;
+  website?: string; // from DB
   phone?: string;
   type?: "guest" | "authenticated";
   preferences?: {
@@ -20,7 +24,10 @@ export interface User {
     notifications?: boolean;
     [key: string]: any;
   };
-  plan_tier?: "free" | "sovereign";
+  plan_tier?: "free" | "sovereign"; // from DB enum
+  plan_valid_until?: string; // from DB
+  stripe_customer_id?: string; // from DB
+  created_at?: string;
   [key: string]: any; // Allow extra metadata
 }
 

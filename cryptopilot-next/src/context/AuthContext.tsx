@@ -97,9 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               profile?.full_name ?? session.user.user_metadata?.full_name,
             avatar_url:
               profile?.avatar_url ?? session.user.user_metadata?.avatar_url,
+            website: profile?.website,
             // Preferences from JSONB
             preferences: profile?.preferences || {},
             plan_tier: profile?.plan_tier || "free",
+            plan_valid_until: profile?.plan_valid_until,
+            stripe_customer_id: profile?.stripe_customer_id,
+            created_at: session.user.created_at,
             ...session.user.user_metadata, // Fallback for other meta
           });
 
@@ -199,9 +203,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Map DB 'provider' -> 'type'
       const mappedWallets: Wallet[] = (data || []).map((w: any) => ({
+        id: w.id,
         type: w.provider,
         address: w.address,
+        label: w.label,
         chainId: w.chain_type === "evm" ? 1 : 0, // Simplified mapping
+        isPrimary: w.is_primary,
         connectedAt: w.created_at,
       }));
 
