@@ -2,10 +2,12 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import MainLayout from "../components/layout/MainLayout";
+import { ReactNode } from "react";
+import { Metadata } from "next";
 
 const nunito = Nunito({ subsets: ["latin"] });
 
-export const metadata = {
+export const metadata: Metadata = {
   metadataBase: new URL("https://cryptopilot.app"), // Remplacez par votre vrai domaine
   title: {
     default: "CryptoPilot | Dashboard Crypto & Portfolio Tracker",
@@ -68,7 +70,7 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={nunito.className} suppressHydrationWarning>

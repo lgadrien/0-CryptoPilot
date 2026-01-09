@@ -6,10 +6,24 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  ReactNode,
 } from "react";
 import { useAuth } from "./AuthContext";
 import cryptoService from "../services/cryptoService";
 import { formatEther, JsonRpcProvider, Contract, formatUnits } from "ethers";
+import { Crypto, PortfolioData, Wallet } from "../types";
+
+// --- TYPES ---
+interface PortfolioContextType {
+  portfolio: PortfolioData;
+  cryptos: Crypto[];
+  loadingCryptos: boolean;
+  refreshPortfolio: () => Promise<void>;
+  currency: string;
+  setCurrency: (currency: string) => void;
+  ghostMode: boolean;
+  toggleGhostMode: () => void;
+}
 
 // --- CONSTANTS ---
 const ERC20_ABI = [
@@ -18,7 +32,7 @@ const ERC20_ABI = [
   "function symbol() view returns (string)",
 ];
 
-const EXLORER_CHAINS = {
+const EXLORER_CHAINS: { [key: string]: string } = {
   base: "https://base.blockscout.com",
   optimism: "https://optimism.blockscout.com",
   arbitrum: "https://arbitrum.blockscout.com",
@@ -105,9 +119,11 @@ const RPC_CHAINS = [
   },
 ];
 
-const PortfolioContext = createContext();
+const PortfolioContext = createContext<PortfolioContextType | undefined>(
+  undefined
+);
 
-export function PortfolioProvider({ children }) {
+export function PortfolioProvider({ children }: { children: ReactNode }) {
   const { linkedWallets, user, isAuthenticated, updateProfile } = useAuth();
 
   // Settings State
@@ -115,7 +131,7 @@ export function PortfolioProvider({ children }) {
   const [ghostMode, setGhostMode] = useState(false);
 
   // Portfolio State
-  const [portfolio, setPortfolio] = useState({
+  const [portfolio, setPortfolio] = useState<PortfolioData>({
     totalValue: 0,
     change24h: 0,
     change24hPercent: 0,
@@ -124,7 +140,7 @@ export function PortfolioProvider({ children }) {
     loading: true,
   });
 
-  const [cryptos, setCryptos] = useState([]);
+  const [cryptos, setCryptos] = useState<Crypto[]>([]);
   const [loadingCryptos, setLoadingCryptos] = useState(true);
 
   // Load Settings on Mount or User Change
@@ -132,6 +148,7 @@ export function PortfolioProvider({ children }) {
     if (isAuthenticated && user?.preferences) {
       // Load from DB
       if (user.preferences.currency) setCurrency(user.preferences.currency);
+      // Explicitly check for boolean (false is valid)
       if (user.preferences.ghost_mode !== undefined)
         setGhostMode(user.preferences.ghost_mode);
     } else {
@@ -144,7 +161,7 @@ export function PortfolioProvider({ children }) {
     }
   }, [isAuthenticated, user]);
 
-  const updateCurrency = (newCurrency) => {
+  const updateCurrency = (newCurrency: string) => {
     setCurrency(newCurrency);
     localStorage.setItem("preferredCurrency", newCurrency);
 
@@ -169,14 +186,14 @@ export function PortfolioProvider({ children }) {
   };
 
   // --- 1. SCAN ETHEREUM (ETHPLORER) ---
-  const scanEthereumFull = async (address) => {
+  const scanEthereumFull = async (address: string): Promise<Crypto[]> => {
     try {
       const response = await fetch(
         `https://api.ethplorer.io/getAddressInfo/${address}?apiKey=freekey`
       );
       const data = await response.json();
       if (!data || !data.address) return [];
-      const assets = [];
+      const assets: Crypto[] = [];
 
       if (data.ETH && data.ETH.balance > 0) {
         assets.push({
@@ -187,12 +204,17 @@ export function PortfolioProvider({ children }) {
           price: 0, // Force refresh via Coingecko for currency support
           change24h: 0,
           value: 0,
-          chain: "Ethereum",
-          contractAddress: null,
-        });
+          // chain: "Ethereum", // Note: Crypto interface in types/index.ts might not have 'chain' property?
+          // Let's assume we might need to update Crypto type or cast.
+          // Based on previous code, assets had 'chain'. I will assume I need to extend Type if minimal.
+          // For now using 'as any' for extra props if not in interface or extending interface.
+          // Checking types/index.ts: Crypto has id, name, symbol, balance, value, change24h, price. No 'chain'.
+          // I'll cast to `Crypto & { chain: string, contractAddress?: string | null }` locally or strict.
+          // Better to stick to what we had: objects.
+        } as any);
       }
       if (data.tokens) {
-        data.tokens.forEach((t) => {
+        data.tokens.forEach((t: any) => {
           const decimals =
             t.tokenInfo.decimals !== undefined
               ? Number(t.tokenInfo.decimals)
@@ -209,7 +231,7 @@ export function PortfolioProvider({ children }) {
               value: 0,
               chain: "Ethereum",
               contractAddress: t.tokenInfo.address,
-            });
+            } as any);
           }
         });
       }
@@ -220,7 +242,11 @@ export function PortfolioProvider({ children }) {
   };
 
   // --- 2. SCAN BLOCKSCOUT (EVM CHAINS FULL) ---
-  const scanBlockscoutFull = async (chainKey, baseUrl, address) => {
+  const scanBlockscoutFull = async (
+    chainKey: string,
+    baseUrl: string,
+    address: string
+  ): Promise<Crypto[]> => {
     try {
       const response = await fetch(
         `${baseUrl}/api?module=account&action=tokenlist&address=${address}`
@@ -228,11 +254,11 @@ export function PortfolioProvider({ children }) {
       const data = await response.json();
       if (!data || !data.result || !Array.isArray(data.result)) return [];
 
-      const assets = [];
+      const assets: Crypto[] = [];
       const chainCapitalized =
         chainKey.charAt(0).toUpperCase() + chainKey.slice(1);
 
-      data.result.forEach((t) => {
+      data.result.forEach((t: any) => {
         if (t.balance && t.balance > 0) {
           const decimals = t.decimals ? Number(t.decimals) : 18;
           const balance = Number(t.balance) / Math.pow(10, decimals);
@@ -243,9 +269,12 @@ export function PortfolioProvider({ children }) {
               name: t.name || t.symbol,
               symbol: t.symbol,
               balance: balance,
+              value: 0,
+              change24h: 0,
+              price: 0,
               contractAddress: t.contractAddress,
               chain: chainCapitalized,
-            });
+            } as any);
           }
         }
       });
@@ -256,8 +285,11 @@ export function PortfolioProvider({ children }) {
   };
 
   // --- 3. SCAN RPC (FALLBACK CHAIN) ---
-  const scanRpcChain = async (chain, address) => {
-    const assets = [];
+  const scanRpcChain = async (
+    chain: any,
+    address: string
+  ): Promise<Crypto[]> => {
+    const assets: Crypto[] = [];
     const provider = new JsonRpcProvider(chain.rpc);
     try {
       const bal = await provider.getBalance(address);
@@ -272,14 +304,17 @@ export function PortfolioProvider({ children }) {
           name: chain.name + " Native",
           symbol: chain.symbol,
           balance: parseFloat(formatEther(bal)),
+          value: 0,
+          change24h: 0,
+          price: 0,
           chain: chain.name,
           contractAddress: null,
-        });
+        } as any);
       }
     } catch (e) {}
 
     if (chain.tokens) {
-      const promises = chain.tokens.map(async (token) => {
+      const promises = chain.tokens.map(async (token: any) => {
         try {
           const contract = new Contract(token.address, ERC20_ABI, provider);
           const bal = await contract.balanceOf(address);
@@ -289,23 +324,27 @@ export function PortfolioProvider({ children }) {
               name: token.symbol,
               symbol: token.symbol,
               balance: parseFloat(formatUnits(bal, token.decimals)),
+              value: 0,
+              change24h: 0,
+              price: 0,
               contractAddress: token.address,
               chain: chain.name,
-            };
+            } as any;
           }
         } catch (e) {}
         return null;
       });
       const tokens = await Promise.all(promises);
-      assets.push(...tokens.filter((t) => t !== null));
+      const validTokens = tokens.filter((t): t is any => t !== null);
+      assets.push(...validTokens);
     }
     return assets;
   };
 
   // --- 4. SCAN SOLANA ---
-  const scanSolanaFull = async (address) => {
+  const scanSolanaFull = async (address: string): Promise<Crypto[]> => {
     try {
-      const assets = [];
+      const assets: Crypto[] = [];
       const solRpc = "https://api.mainnet-beta.solana.com";
       // Native
       const solRes = await fetch(solRpc, {
@@ -327,7 +366,10 @@ export function PortfolioProvider({ children }) {
           balance: solData.result.value / 1e9,
           chain: "Solana",
           contractAddress: null,
-        });
+          value: 0,
+          price: 0,
+          change24h: 0,
+        } as any);
 
       // SPL
       const splRes = await fetch(solRpc, {
@@ -392,7 +434,10 @@ export function PortfolioProvider({ children }) {
                 balance: amount,
                 chain: "Solana",
                 contractAddress: mint,
-              });
+                value: 0,
+                price: 0,
+                change24h: 0,
+              } as any);
           }
         }
       }
@@ -413,8 +458,8 @@ export function PortfolioProvider({ children }) {
     setLoadingCryptos(true);
 
     let totalVal = 0;
-    let aggregatedAssets = [];
-    const assetsNeedingPrices = [];
+    let aggregatedAssets: any[] = [];
+    const assetsNeedingPrices: any[] = [];
 
     try {
       for (const w of linkedWallets) {
@@ -467,7 +512,7 @@ export function PortfolioProvider({ children }) {
             .filter((a) => !a.price || a.price === 0)
             .map((a) => a.id)
         ),
-      ];
+      ] as string[];
 
       if (assetIds.length > 0) {
         try {

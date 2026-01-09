@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -25,13 +25,19 @@ export default function Register() {
     setShowConfirmPassword((prev) => !prev);
   }, []);
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const name = e.target.name.value;
-    const email = e.target.email.value;
-    const phone = e.target.phone.value;
-    const password = e.target.password.value;
-    const confirmPassword = e.target.confirmPassword.value;
+    const target = e.currentTarget;
+    const name = (target.elements.namedItem("name") as HTMLInputElement).value;
+    const email = (target.elements.namedItem("email") as HTMLInputElement)
+      .value;
+    const phone = (target.elements.namedItem("phone") as HTMLInputElement)
+      .value;
+    const password = (target.elements.namedItem("password") as HTMLInputElement)
+      .value;
+    const confirmPassword = (
+      target.elements.namedItem("confirmPassword") as HTMLInputElement
+    ).value;
 
     if (password !== confirmPassword) {
       alert("Les mots de passe ne correspondent pas");
@@ -42,7 +48,7 @@ export default function Register() {
       await register({ email, password, name, phone });
       alert("Compte créé avec succès ! Vérifiez votre email pour confirmer.");
       router.push("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       alert("Erreur: " + error.message);
     }
@@ -52,7 +58,6 @@ export default function Register() {
 
   return (
     <div className="flex-1 w-full flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12] relative py-12">
-      {/* Background Decor */}
       {/* Background Decor */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-40 dark:opacity-20 dark:invert pointer-events-none"></div>
 
@@ -73,6 +78,7 @@ export default function Register() {
               Nom complet
             </label>
             <input
+              name="name"
               id="name"
               type="text"
               placeholder="John Doe"
@@ -86,6 +92,7 @@ export default function Register() {
               Téléphone
             </label>
             <input
+              name="phone"
               id="phone"
               type="tel"
               placeholder="06 12 34 56 78"
@@ -99,6 +106,7 @@ export default function Register() {
               Email
             </label>
             <input
+              name="email"
               id="email"
               type="email"
               placeholder="votre@email.com"
@@ -113,6 +121,7 @@ export default function Register() {
             </label>
             <div className="relative">
               <input
+                name="password"
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
@@ -136,6 +145,7 @@ export default function Register() {
             </label>
             <div className="relative">
               <input
+                name="confirmPassword"
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"

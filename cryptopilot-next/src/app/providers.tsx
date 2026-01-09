@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { ReactNode } from "react";
 import { ThemeProvider } from "../context/ThemeContext";
 import { PortfolioProvider } from "../context/PortfolioContext";
 import { AuthProvider } from "../context/AuthContext";
 
-export function Providers({ children }) {
+export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>

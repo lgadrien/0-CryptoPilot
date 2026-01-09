@@ -2,10 +2,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  memo,
+  ReactNode,
+} from "react";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useAuth } from "../../context/AuthContext";
-import { usePortfolio } from "../../context/PortfolioContext"; // Added import
+import { usePortfolio } from "../../context/PortfolioContext";
 import { useMetaMask } from "../../hooks/useMetaMask";
 import { usePhantom } from "../../hooks/usePhantom";
 import {
@@ -13,18 +20,24 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
   LayoutDashboard,
-  Search,
   Bell,
-  Settings,
   TrendingUp,
   Wallet,
+  LucideIcon,
 } from "lucide-react";
+
+interface NavLinkProps {
+  to: string;
+  onClick?: () => void;
+  icon?: LucideIcon;
+  children: ReactNode;
+  className?: string;
+}
 
 // Composant NavLink mémorisé
 const NavLink = memo(
-  ({ to, onClick, icon: Icon, children, className = "" }) => (
+  ({ to, onClick, icon: Icon, children, className = "" }: NavLinkProps) => (
     <Link href={to} onClick={onClick} className={className}>
       {Icon && <Icon className="w-5 h-5" />}
       {children}
@@ -36,14 +49,14 @@ NavLink.displayName = "NavLink";
 function Header() {
   const { isAuthenticated, user, logout, authMethod, walletAddress } =
     useAuth();
-  const { portfolio, currency, ghostMode } = usePortfolio(); // Added settings
+  const { portfolio, currency, ghostMode } = usePortfolio();
   const { formatAddress } = useMetaMask();
   const { account: phantomAccount } = usePhantom();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
-  const headerRef = useRef(null);
-  const userMenuRef = useRef(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const notificationCount = 3;
 
@@ -66,11 +79,17 @@ function Header() {
 
   // Fermer les menus si on clique en dehors
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (headerRef.current && !headerRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        headerRef.current &&
+        !headerRef.current.contains(event.target as Node)
+      ) {
         setShowMobileMenu(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setShowUserMenu(false);
       }
     };

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,11 +9,9 @@ import {
   Trash2,
   Shield,
   Coins,
-  Bell,
-  LogOut,
-  Zap,
   Edit2,
   Upload,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { usePortfolio } from "../../context/PortfolioContext";
@@ -51,10 +49,7 @@ export default function ProfilePage() {
     user?.user_metadata?.full_name ||
     user?.username ||
     "Investisseur";
-  // Read location from profile first (mapped as address prop in user object if done?)
-  // Wait, user object in AuthContext puts everything top level.
-  // Let's assume user.location exists if mapped, or we read from metadata.
-  // Actually in AuthContext setUser we spread metadata. Let's fix user type mapping in AuthContext or read strictly.
+
   const displayIdentity = user?.email || walletAddress || "Anonyme";
   const displayAvatar =
     user?.avatar_url || user?.user_metadata?.avatar_url || null;
@@ -69,7 +64,7 @@ export default function ProfilePage() {
     setIsEditingAvatar(true);
   };
 
-  const handleSaveAvatar = async (e) => {
+  const handleSaveAvatar = async (e: FormEvent) => {
     e.preventDefault();
     if (!editAvatarUrl) return;
 
@@ -89,7 +84,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -123,7 +118,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveProfile = async (e) => {
+  const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!editName.trim()) {
       alert("Le nom ne peut pas être vide.");
@@ -141,7 +136,7 @@ export default function ProfilePage() {
 
       console.log("Profile saved successfully.");
       setIsEditing(false);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error saving profile:", e);
       alert(
         "Erreur lors de la sauvegarde : " + (e.message || "Erreur inconnue")
@@ -295,7 +290,7 @@ export default function ProfilePage() {
                       src={editAvatarUrl}
                       alt="Preview"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
+                      onError={(e: any) => {
                         e.target.src = "https://via.placeholder.com/150";
                       }}
                     />
@@ -383,7 +378,7 @@ export default function ProfilePage() {
                     src={displayAvatar}
                     alt={displayName}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
+                    onError={(e: any) => {
                       e.target.style.display = "none"; // Hide if broken
                     }}
                   />

@@ -3,12 +3,22 @@ import { useEffect, useState, useCallback, memo } from "react";
 import Image from "next/image";
 import cryptoService from "../../services/cryptoService";
 
+// Interface for Ticker Coin Data
+interface TickerCoin {
+  id: string;
+  name: string;
+  symbol: string;
+  image: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+}
+
 // Constantes
 const REFRESH_INTERVAL = 120000; // 2 minutes
 const RETRY_DELAY = 10000; // 10 secondes
 
 // Composant pour chaque crypto
-const CryptoItem = memo(({ coin }) => (
+const CryptoItem = memo(({ coin }: { coin: TickerCoin }) => (
   <div className="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm text-gray-800 dark:text-white">
     <Image
       src={coin.image}
@@ -45,8 +55,8 @@ const CryptoItem = memo(({ coin }) => (
 CryptoItem.displayName = "CryptoItem";
 
 function CryptoTicker() {
-  const [cryptos, setCryptos] = useState([]);
-  const [error, setError] = useState(null);
+  const [cryptos, setCryptos] = useState<TickerCoin[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -60,10 +70,10 @@ function CryptoTicker() {
 
       setCryptos(data);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erreur de chargement:", err);
 
-      if (err.message.includes("Rate limit")) {
+      if (err.message && err.message.includes("Rate limit")) {
         console.warn("Rate limit atteint, nouvelle tentative dans 10s...");
         setTimeout(fetchData, RETRY_DELAY);
         return;

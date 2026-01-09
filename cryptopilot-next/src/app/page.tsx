@@ -2,27 +2,44 @@
 import Link from "next/link";
 import Image from "next/image";
 import CryptoTicker from "../components/layout/CryptoTicker";
-import { TrendingUp, Wallet, Zap } from "lucide-react";
-import { useState, useEffect, useMemo, memo } from "react";
+import { TrendingUp, Wallet, Zap, LucideIcon } from "lucide-react";
+import { useState, useEffect, useMemo, memo, CSSProperties } from "react";
+
+// Interface for FeatureCard
+interface FeatureCardProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
 
 // Composant Feature Card mémorisé
-const FeatureCard = memo(({ icon: Icon, title, description }) => (
-  <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/80 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-gray-200 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
-    <div className="p-3 rounded-full bg-[#D4AF37]/10 group-hover:bg-[#D4AF37]/20 transition-colors">
-      <Icon className="w-8 h-8 text-[#D4AF37] group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.5)] transition-all" />
+const FeatureCard = memo(
+  ({ icon: Icon, title, description }: FeatureCardProps) => (
+    <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/80 dark:bg-[#1C1F26]/60 backdrop-blur-xl border border-gray-200 dark:border-white/5 hover:border-[#D4AF37]/50 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-[#D4AF37]/10 group">
+      <div className="p-3 rounded-full bg-[#D4AF37]/10 group-hover:bg-[#D4AF37]/20 transition-colors">
+        <Icon className="w-8 h-8 text-[#D4AF37] group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.5)] transition-all" />
+      </div>
+      <h3 className="font-bold text-base sm:text-lg text-gray-800 dark:text-gray-100 tracking-tight">
+        {title}
+      </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
+        {description}
+      </p>
     </div>
-    <h3 className="font-bold text-base sm:text-lg text-gray-800 dark:text-gray-100 tracking-tight">
-      {title}
-    </h3>
-    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
-      {description}
-    </p>
-  </div>
-));
+  )
+);
 FeatureCard.displayName = "FeatureCard";
 
+// Interface for CryptoLogo
+interface CryptoLogoProps {
+  src: string;
+  size: string;
+  float: string;
+  style: CSSProperties;
+}
+
 // Composant Logo Crypto mémorisé
-const CryptoLogo = memo(({ src, size, float, style }) => (
+const CryptoLogo = memo(({ src, size, float, style }: CryptoLogoProps) => (
   <div className={`absolute ${size} ${float}`} style={style}>
     <Image
       src={src}
@@ -36,9 +53,19 @@ const CryptoLogo = memo(({ src, size, float, style }) => (
 ));
 CryptoLogo.displayName = "CryptoLogo";
 
+interface LogoPosition {
+  [key: string]: string; // left, right, top, bottom
+}
+
+interface CryptoLogoData {
+  src: string;
+  size: string;
+  float: string;
+}
+
 export default function Home() {
-  const [logoPositions, setLogoPositions] = useState([]);
-  const [cryptoLogos, setCryptoLogos] = useState([]);
+  const [logoPositions, setLogoPositions] = useState<LogoPosition[]>([]);
+  const [cryptoLogos, setCryptoLogos] = useState<CryptoLogoData[]>([]);
 
   useEffect(() => {
     // Fetch Trending Coins
@@ -59,13 +86,19 @@ export default function Home() {
   }, []);
 
   // Générer des positions aléatoires sans collision
-  const generatePositions = (logos) => {
+  const generatePositions = (logos: CryptoLogoData[]) => {
     // Fonction pour vérifier si deux positions se chevauchent
-    const checkCollision = (pos1, pos2, minDistance = 15) => {
+    const checkCollision = (
+      pos1: LogoPosition,
+      pos2: LogoPosition,
+      minDistance = 15
+    ) => {
       // Convertir les positions en coordonnées numériques
-      const getCoords = (pos) => {
-        const x = pos.left ? parseFloat(pos.left) : 100 - parseFloat(pos.right);
-        const y = pos.top ? parseFloat(pos.top) : 100 - parseFloat(pos.bottom);
+      const getCoords = (pos: LogoPosition) => {
+        const x = pos.left
+          ? parseFloat(pos.left)
+          : 100 - parseFloat(pos.right!);
+        const y = pos.top ? parseFloat(pos.top) : 100 - parseFloat(pos.bottom!);
         return { x, y };
       };
 
@@ -80,11 +113,13 @@ export default function Home() {
       return distance < minDistance;
     };
 
-    const positions = [];
+    const positions: LogoPosition[] = [];
     const maxAttempts = 100;
 
     for (let i = 0; i < logos.length; i++) {
-      let newPosition;
+      let newPosition: LogoPosition = {};
+      // Initializer as empty object or let TS handle it.
+      // We know it will be assigned.
       let hasCollision = true;
       let tryCount = 0;
 
@@ -106,7 +141,14 @@ export default function Home() {
         tryCount++;
       }
 
-      positions.push(newPosition);
+      // If we exit loop, newPosition is set (or at least initialized in last iteration)
+      // To satisfy TS better we initialize newPosition properly before loop or type it.
+      // But 'newPosition' logic above is sound. If tryCount >= maxAttempts it might have collision but we push anyway?
+      // Original logic pushed anyway.
+
+      if (Object.keys(newPosition).length > 0) {
+        positions.push(newPosition);
+      }
     }
 
     setLogoPositions(positions);
@@ -156,7 +198,7 @@ export default function Home() {
               src={logo.src}
               size={logo.size}
               float={logo.float}
-              style={logoPositions[index]}
+              style={logoPositions[index] as CSSProperties}
             />
           ))}
       </div>
