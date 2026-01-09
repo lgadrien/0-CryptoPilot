@@ -76,7 +76,7 @@ export default function Register() {
               id="name"
               type="text"
               placeholder="John Doe"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
               required
             />
           </div>
@@ -89,7 +89,7 @@ export default function Register() {
               id="phone"
               type="tel"
               placeholder="06 12 34 56 78"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
               required
             />
           </div>
@@ -102,7 +102,7 @@ export default function Register() {
               id="email"
               type="email"
               placeholder="votre@email.com"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
               required
             />
           </div>
@@ -116,7 +116,7 @@ export default function Register() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
                 required
               />
               <button
@@ -139,7 +139,7 @@ export default function Register() {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
                 required
               />
               <button
@@ -179,7 +179,7 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B4941F] text-[#0B0D12] font-bold py-3.5 rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all transform hover:scale-[1.02] shadow-lg mt-2"
+            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B4941F] text-[#0B0D12] font-bold py-3.5 rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all shadow-lg mt-2"
           >
             Créer mon compte
           </button>

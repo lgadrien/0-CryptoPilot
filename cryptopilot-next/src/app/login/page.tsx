@@ -75,7 +75,7 @@ export default function Login() {
               name="email"
               type="text"
               placeholder="votre@email.com"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
               required
             />
           </div>
@@ -90,7 +90,7 @@ export default function Login() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
+                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12]/50 border border-gray-200 dark:border-gray-800 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-colors duration-300 font-medium"
                 required
               />
               <button
@@ -124,7 +124,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B4941F] text-[#0B0D12] font-bold py-3.5 rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 mt-2 shadow-lg"
+            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B4941F] text-[#0B0D12] font-bold py-3.5 rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 shadow-lg"
           >
             {loading ? (
               <Loader2 className="animate-spin w-5 h-5" />
