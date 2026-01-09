@@ -7,6 +7,8 @@ interface AssetListProps {
   loading: boolean;
   authMethod: string | null;
   walletAddress: string | null;
+  currency: string;
+  ghostMode: boolean;
 }
 
 export default function AssetList({
@@ -14,6 +16,8 @@ export default function AssetList({
   loading,
   authMethod,
   walletAddress,
+  currency = "USD",
+  ghostMode = false,
 }: AssetListProps) {
   if (!walletAddress) return null;
 
@@ -80,11 +84,12 @@ export default function AssetList({
                   )}
                 </div>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                  {crypto.balance.toFixed(6)} {crypto.symbol}
+                  {ghostMode ? "***" : crypto.balance.toFixed(6)}{" "}
+                  {crypto.symbol}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  $
-                  {crypto.price.toLocaleString("fr-FR", {
+                  {currency === "USD" ? "$" : "€"}
+                  {crypto.price.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}{" "}
@@ -93,11 +98,13 @@ export default function AssetList({
               </div>
               <div className="text-left sm:text-right">
                 <p className="font-semibold text-gray-900 dark:text-gray-200 text-sm sm:text-base">
-                  $
-                  {crypto.value.toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  {currency === "USD" ? "$" : "€"}
+                  {ghostMode
+                    ? "***"
+                    : crypto.value.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                 </p>
                 <p
                   className={`text-xs sm:text-sm font-medium ${

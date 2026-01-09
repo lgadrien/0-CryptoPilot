@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import ThemeToggle from "../ui/ThemeToggle";
 import { useAuth } from "../../context/AuthContext";
+import { usePortfolio } from "../../context/PortfolioContext"; // Added import
 import { useMetaMask } from "../../hooks/useMetaMask";
 import { usePhantom } from "../../hooks/usePhantom";
 import {
@@ -35,6 +36,7 @@ NavLink.displayName = "NavLink";
 function Header() {
   const { isAuthenticated, user, logout, authMethod, walletAddress } =
     useAuth();
+  const { portfolio, currency, ghostMode } = usePortfolio(); // Added settings
   const { formatAddress } = useMetaMask();
   const { account: phantomAccount } = usePhantom();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -153,6 +155,27 @@ function Header() {
                 >
                   Marché
                 </NavLink>
+                {/* Balance Display */}
+                {isAuthenticated && (
+                  <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-[#1C1F26] rounded-lg border border-gray-200 dark:border-[#2A2D35]">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider">
+                      Solde
+                    </span>
+                    <span className="text-sm font-bold text-[#D4AF37]">
+                      {ghostMode ? (
+                        "*******"
+                      ) : (
+                        <>
+                          {currency === "USD" ? "$" : "€"}
+                          {portfolio.totalValue?.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }) || "0.00"}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                )}
               </>
             )}
           </nav>

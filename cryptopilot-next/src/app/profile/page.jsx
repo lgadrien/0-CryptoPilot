@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { usePortfolio } from "../../context/PortfolioContext";
 import WalletManager from "../../components/portfolio/WalletManager";
 
 export default function ProfilePage() {
@@ -26,10 +27,9 @@ export default function ProfilePage() {
     authMethod,
     updateProfile,
   } = useAuth();
+  const { currency, setCurrency, ghostMode, toggleGhostMode } = usePortfolio();
 
   // États locaux persistant (préférences utilisateur)
-  const [currency, setCurrency] = useState("EUR");
-  const [ghostMode, setGhostMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -70,27 +70,19 @@ export default function ProfilePage() {
 
   // Charger les préférences au montage
   useEffect(() => {
-    const savedCurrency = localStorage.getItem("preferredCurrency");
-    const savedGhost = localStorage.getItem("ghostMode");
     const savedNotifs = localStorage.getItem("notificationsEnabled");
-
-    if (savedCurrency) setCurrency(savedCurrency);
-    if (savedGhost) setGhostMode(savedGhost === "true");
     if (savedNotifs) setNotifications(savedNotifs === "true");
   }, []);
 
   // Sauvegarder les préférences lors des changements
   const handleCurrencyToggle = () => {
     const newVal = currency === "EUR" ? "USD" : "EUR";
-    setCurrency(newVal);
-    localStorage.setItem("preferredCurrency", newVal);
-    window.dispatchEvent(new Event("currencyChanged"));
+    setCurrency(newVal); // Updates global context
+    // window.dispatchEvent(new Event("currencyChanged")); // Context handles update now
   };
 
   const handleGhostToggle = () => {
-    const newVal = !ghostMode;
-    setGhostMode(newVal);
-    localStorage.setItem("ghostMode", String(newVal));
+    toggleGhostMode();
   };
 
   const toggleNotifications = () => {

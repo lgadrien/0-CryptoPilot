@@ -13,12 +13,16 @@ interface PortfolioStatsProps {
   };
   authMethod: string | null;
   walletAddress: string | null;
+  currency: string;
+  ghostMode: boolean;
 }
 
 export default function PortfolioStats({
   portfolio,
   authMethod,
   walletAddress,
+  currency = "USD",
+  ghostMode = false,
 }: PortfolioStatsProps) {
   const { formatAddress } = useMetaMask();
 
@@ -46,22 +50,30 @@ export default function PortfolioStats({
         ) : (
           <>
             <p className="text-2xl sm:text-3xl font-bold text-[#D4AF37]">
-              $
-              {portfolio.totalValue.toLocaleString("fr-FR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {ghostMode ? (
+                "*******"
+              ) : (
+                <>
+                  {currency === "USD" ? "$" : "€"}
+                  {portfolio.totalValue.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             </p>
-            <p
-              className={`text-xs sm:text-sm mt-2 ${
-                portfolio.change24hPercent >= 0
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
-            >
-              {portfolio.change24hPercent >= 0 ? "+" : ""}
-              {portfolio.change24hPercent.toFixed(2)}% (24h)
-            </p>
+            {!ghostMode && (
+              <p
+                className={`text-xs sm:text-sm mt-2 ${
+                  portfolio.change24hPercent >= 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {portfolio.change24hPercent >= 0 ? "+" : ""}
+                {portfolio.change24hPercent.toFixed(2)}% (24h)
+              </p>
+            )}
           </>
         )}
       </div>
@@ -82,14 +94,18 @@ export default function PortfolioStats({
         ) : (
           <>
             <p className="text-2xl sm:text-3xl font-bold text-[#D4AF37]">
-              {parseFloat(portfolio.ethBalance).toFixed(4)} ETH
+              {ghostMode
+                ? "***"
+                : `${parseFloat(portfolio.ethBalance).toFixed(4)} ETH`}
             </p>
             <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-2">
-              ≈ $
-              {portfolio.ethValue.toLocaleString("fr-FR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              ≈ {currency === "USD" ? "$" : "€"}
+              {ghostMode
+                ? "***"
+                : portfolio.ethValue.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
             </p>
           </>
         )}
@@ -115,20 +131,29 @@ export default function PortfolioStats({
                 portfolio.change24h >= 0 ? "text-green-400" : "text-red-400"
               }`}
             >
-              {portfolio.change24h >= 0 ? "+" : ""}$
-              {Math.abs(portfolio.change24h).toLocaleString("fr-FR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {ghostMode ? (
+                "*******"
+              ) : (
+                <>
+                  {portfolio.change24h >= 0 ? "+" : ""}
+                  {currency === "USD" ? "$" : "€"}
+                  {Math.abs(portfolio.change24h).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             </p>
-            <p
-              className={`text-xs sm:text-sm mt-2 ${
-                portfolio.change24h >= 0 ? "text-green-400" : "text-red-400"
-              }`}
-            >
-              {portfolio.change24h >= 0 ? "+" : ""}
-              {portfolio.change24hPercent.toFixed(2)}%
-            </p>
+            {!ghostMode && (
+              <p
+                className={`text-xs sm:text-sm mt-2 ${
+                  portfolio.change24h >= 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {portfolio.change24h >= 0 ? "+" : ""}
+                {portfolio.change24hPercent.toFixed(2)}%
+              </p>
+            )}
           </>
         )}
       </div>
