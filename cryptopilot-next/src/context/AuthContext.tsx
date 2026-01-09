@@ -52,7 +52,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { session },
         } = await supabase.auth.getSession();
 
+        // Remember Me Logic Check
+        const rememberMe = localStorage.getItem("rememberMe") === "true";
+        const isSessionActive =
+          sessionStorage.getItem("sessionActive") === "true";
+
+        // Si on a une session mais que RememberMe est faux et que ce n'est pas une session active (retour après fermeture)
+        if (session?.user && !rememberMe && !isSessionActive) {
+          console.log("Auth: Session expired (Remember Me is off)");
+          await supabase.auth.signOut();
+          setIsAuthenticated(false);
+          setLoading(false);
+          return;
+        }
+
         if (session?.user) {
+          // Mark session as active for this tab
+          sessionStorage.setItem("sessionActive", "true");
+
           // Authenticated with Supabase
           console.log("Auth: Restored Supabase Session", session.user.email);
           setUser({
@@ -113,12 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         setIsAuthenticated(true);
         setAuthMethod("traditional");
+        sessionStorage.setItem("sessionActive", "true"); // Mark active
         await fetchWallets(session.user.id);
       } else if (_event === "SIGNED_OUT") {
         // Clear Supabase state
         setUser(null);
         setIsAuthenticated(false);
         setLinkedWallets([]);
+        sessionStorage.removeItem("sessionActive");
       }
     });
 
@@ -156,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 2. Auth Methods
   const login = useCallback(
-    async ({ identifier, password }: any) => {
+    async ({ identifier, password, rememberMe = false }: any) => {
       let email = identifier;
 
       // Si ce n'est pas un email (pas de @), on suppose que c'est un téléphone
@@ -180,6 +199,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (data?.session?.user) {
+        // Store Remember Me Preference
+        localStorage.setItem("rememberMe", rememberMe ? "true" : "false");
+
         setUser({
           id: data.session.user.id,
           email: data.session.user.email,

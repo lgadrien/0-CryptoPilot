@@ -51,71 +51,64 @@ export default function Register() {
   if (isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12] px-4 py-8 transition-colors duration-300">
-      <div className="w-full max-w-md bg-white dark:bg-[#1C1F26] rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-yellow-900/10 p-6 sm:p-8 transition-colors duration-300">
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#D4AF37] mb-2">
+    <div className="flex-1 w-full flex items-center justify-center bg-[#0B0D12] relative py-12">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#0B0D12] via-transparent to-[#0B0D12] pointer-events-none opacity-80"></div>
+
+      {/* Main Card */}
+      <div className="relative z-10 w-full max-w-md bg-[#1C1F26]/80 backdrop-blur-xl border border-gray-800 rounded-2xl shadow-2xl p-8 mx-4 max-h-[95vh] overflow-y-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-[#D4AF37] mb-2 tracking-tight">
             Inscription
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+          <p className="text-gray-400 text-sm">
             Créez votre compte CryptoPilot
           </p>
         </div>
 
-        <form className="space-y-4 sm:space-y-5" onSubmit={handleRegister}>
+        <form className="space-y-5" onSubmit={handleRegister}>
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
               Nom complet
             </label>
             <input
               id="name"
               type="text"
               placeholder="John Doe"
-              className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
+              className="w-full px-4 py-3 bg-[#0B0D12]/50 border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
               required
             />
           </div>
 
           <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
               Téléphone
             </label>
             <input
               id="phone"
               type="tel"
               placeholder="06 12 34 56 78"
-              className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
+              className="w-full px-4 py-3 bg-[#0B0D12]/50 border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
               required
             />
           </div>
 
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
               Email
             </label>
             <input
               id="email"
               type="email"
               placeholder="votre@email.com"
-              className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
+              className="w-full px-4 py-3 bg-[#0B0D12]/50 border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
               required
             />
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
               Mot de passe
             </label>
             <div className="relative">
@@ -123,69 +116,50 @@ export default function Register() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 sm:py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
+                className="w-full px-4 py-3 pr-12 bg-[#0B0D12]/50 border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
                 required
               />
               <button
                 type="button"
                 onClick={togglePassword}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] transition-colors"
-                aria-label={
-                  showPassword
-                    ? "Masquer le mot de passe"
-                    : "Afficher le mot de passe"
-                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#D4AF37] transition-colors p-1"
+                aria-label={showPassword ? "Masquer" : "Afficher"}
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
-              Confirmer le mot de passe
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
+              Confirmer
             </label>
             <div className="relative">
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 sm:py-3 pr-12 bg-gray-50 dark:bg-[#0B0D12] border border-gray-300 dark:border-[#2A2D35] rounded-xl text-sm sm:text-base text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-colors duration-300"
+                className="w-full px-4 py-3 pr-12 bg-[#0B0D12]/50 border border-gray-800 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 transition-all font-medium"
                 required
               />
               <button
                 type="button"
                 onClick={toggleConfirmPassword}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-[#D4AF37] transition-colors"
-                aria-label={
-                  showConfirmPassword
-                    ? "Masquer le mot de passe"
-                    : "Afficher le mot de passe"
-                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#D4AF37] transition-colors p-1"
+                aria-label={showConfirmPassword ? "Masquer" : "Afficher"}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <div className="flex items-start text-xs sm:text-sm">
+          <div className="flex items-start pt-1">
             <input
               type="checkbox"
-              className="mr-2 mt-1 accent-[#D4AF37] flex-shrink-0 cursor-pointer"
+              className="mt-1 w-4 h-4 mr-2 rounded border-gray-700 bg-[#0B0D12] text-[#D4AF37] focus:ring-[#D4AF37]/20 focus:ring-offset-0 accent-[#D4AF37] flex-shrink-0"
               required
             />
-            <label className="text-gray-600 dark:text-gray-400">
+            <label className="text-xs text-gray-400">
               J'accepte les{" "}
               <a
                 href="#"
@@ -205,20 +179,22 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-[#D4AF37] text-[#0B0D12] px-8 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:bg-[#F5D76E] transition-all shadow-lg shadow-yellow-900/30 hover:shadow-yellow-900/50"
+            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B4941F] text-[#0B0D12] font-bold py-3.5 rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all transform hover:scale-[1.02] shadow-lg mt-2"
           >
             Créer mon compte
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          Déjà un compte ?{" "}
-          <Link
-            href="/login"
-            className="text-[#D4AF37] hover:text-[#F5D76E] transition-colors font-semibold"
-          >
-            Se connecter
-          </Link>
+        <div className="mt-8 text-center pt-6 border-t border-gray-800/50">
+          <p className="text-sm text-gray-500">
+            Déjà un compte ?{" "}
+            <Link
+              href="/login"
+              className="text-[#D4AF37] hover:text-white font-semibold transition-colors"
+            >
+              Se connecter
+            </Link>
+          </p>
         </div>
       </div>
     </div>

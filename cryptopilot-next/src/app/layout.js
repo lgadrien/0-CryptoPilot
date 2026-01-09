@@ -1,8 +1,7 @@
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+import MainLayout from "../components/layout/MainLayout";
 
 const nunito = Nunito({ subsets: ["latin"] });
 
@@ -75,9 +74,7 @@ export default function RootLayout({ children }) {
       <body className={nunito.className} suppressHydrationWarning>
         <Providers>
           <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-[#0B0D12] text-gray-900 dark:text-gray-200 transition-colors duration-300">
-            <Header />
-            {children}
-            <Footer />
+            <MainLayout>{children}</MainLayout>
           </div>
         </Providers>
       </body>
