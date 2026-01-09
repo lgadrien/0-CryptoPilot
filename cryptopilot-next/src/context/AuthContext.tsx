@@ -91,16 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({
             id: session.user.id,
             email: session.user.email,
-            // Prioritize Profile Data > Metadata
-            username: profile?.username || session.user.user_metadata?.username,
+            // Prioritize Profile Data (DB) > Metadata (Auth)
+            username: profile?.username ?? session.user.user_metadata?.username,
             full_name:
-              profile?.full_name || session.user.user_metadata?.full_name,
+              profile?.full_name ?? session.user.user_metadata?.full_name,
             avatar_url:
-              profile?.avatar_url || session.user.user_metadata?.avatar_url,
+              profile?.avatar_url ?? session.user.user_metadata?.avatar_url,
             // Preferences from JSONB
             preferences: profile?.preferences || {},
             plan_tier: profile?.plan_tier || "free",
-            ...session.user.user_metadata, // Fallback
+            ...session.user.user_metadata, // Fallback for other meta
           });
 
           setIsAuthenticated(true);
@@ -429,10 +429,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 1. Update 'profiles' table (Public Data)
         const profileUpdates: any = { id: user.id, updated_at: new Date() }; // Needed for Upsert
 
-        if (updates.username) profileUpdates.username = updates.username;
-        if (updates.full_name) profileUpdates.full_name = updates.full_name;
-        if (updates.avatar_url) profileUpdates.avatar_url = updates.avatar_url;
-        if (updates.preferences)
+        if (updates.username !== undefined)
+          profileUpdates.username = updates.username;
+        if (updates.full_name !== undefined)
+          profileUpdates.full_name = updates.full_name;
+        if (updates.avatar_url !== undefined)
+          profileUpdates.avatar_url = updates.avatar_url;
+        if (updates.preferences !== undefined)
           profileUpdates.preferences = updates.preferences;
 
         if (Object.keys(profileUpdates).length > 2) {
