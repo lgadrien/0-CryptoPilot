@@ -127,13 +127,16 @@
 
 /* Fallback global */
 html,
-body {
+body,
+:root {
   height: 100%;
 }
 
-/* Standard Theme Transition */
+/* Base Body Transition */
 body {
-  transition-property: background-color, color;
+  @apply bg-gray-50 dark:bg-[#0B0D12] text-gray-900 dark:text-gray-200;
+  transition-property: background-color, border-color, color, fill, stroke,
+    box-shadow, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
-  transition-timing-function: ease-in-out;
 }
