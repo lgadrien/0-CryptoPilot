@@ -141,7 +141,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const localAddr = localStorage.getItem("walletAddress");
-        if (localAddr) setWalletAddress(localAddr);
+        if (localAddr) {
+          setWalletAddress(localAddr);
+        } else if (linkedWallets.length > 0) {
+          setWalletAddress(linkedWallets[0].address);
+        }
       } catch (error) {
         console.error("Auth Initialization Error:", error);
       } finally {
@@ -282,14 +286,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-    localStorage.clear(); // Clear guest data too
+    // 1. Optimistic Update (Instant Effect)
     setIsAuthenticated(false);
     setUser(null);
     setWalletAddress(null);
     setLinkedWallets([]);
     setAuthMethod("traditional");
-  }, []);
+    localStorage.clear(); // Clear all local data
+    sessionStorage.removeItem("sessionActive");
+
+    // 2. Perform Supabase SignOut (background/async)
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  }, [supabase]);
 
   // 3. Wallet Management (Hybrid Stub)
   const addWallet = useCallback(

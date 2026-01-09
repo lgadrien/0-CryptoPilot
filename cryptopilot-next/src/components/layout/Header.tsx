@@ -60,8 +60,8 @@ function Header() {
 
   const notificationCount = 3;
 
-  const handleLogout = useCallback(() => {
-    logout();
+  const handleLogout = useCallback(async () => {
+    await logout();
     router.push("/");
     setShowMobileMenu(false);
     setShowUserMenu(false);

@@ -38,24 +38,28 @@ export default function ProfilePage() {
   // États d'édition
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
-  const [editName, setEditName] = useState("");
+
+  // Split Name Fields
+  const [editUsername, setEditUsername] = useState("");
+  const [editFullName, setEditFullName] = useState("");
+
   const [editAvatarUrl, setEditAvatarUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // New state for loading feedback
+  const [isSaving, setIsSaving] = useState(false);
 
   // Données Utilisateur Réelles (Derivées du Context)
-  const displayName =
-    user?.user_metadata?.username ||
-    user?.user_metadata?.full_name ||
-    user?.username ||
-    "Investisseur";
+  const displayUsername =
+    user?.username || user?.user_metadata?.username || "Investisseur";
+  const displayFullName =
+    user?.full_name || user?.user_metadata?.full_name || "";
 
   const displayIdentity = user?.email || walletAddress || "Anonyme";
   const displayAvatar =
     user?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const handleStartEdit = () => {
-    setEditName(displayName);
+    setEditUsername(displayUsername);
+    setEditFullName(displayFullName);
     setIsEditing(true);
   };
 
@@ -75,7 +79,6 @@ export default function ProfilePage() {
       });
       setIsEditingAvatar(false);
       setEditAvatarUrl(""); // Reset
-      // alert("Avatar mis à jour !"); // Optional feedback
     } catch (e) {
       alert("Erreur lors de la mise à jour de l'avatar");
       console.error(e);
@@ -120,18 +123,19 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
-    if (!editName.trim()) {
-      alert("Le nom ne peut pas être vide.");
+    if (!editUsername.trim()) {
+      alert("Le pseudo ne peut pas être vide.");
       return;
     }
 
     try {
       setIsSaving(true);
-      console.log("Saving profile...", { editName });
+      console.log("Saving profile...", { username: editUsername });
 
+      // We ONLY update the username (pseudo), full_name is read-only in UI
       await updateProfile({
-        username: editName,
-        full_name: editName,
+        username: editUsername,
+        // full_name is NOT sent, so it remains unchanged in DB
       });
 
       console.log("Profile saved successfully.");
@@ -155,8 +159,7 @@ export default function ProfilePage() {
   // Sauvegarder les préférences lors des changements
   const handleCurrencyToggle = () => {
     const newVal = currency === "EUR" ? "USD" : "EUR";
-    setCurrency(newVal); // Updates global context
-    // window.dispatchEvent(new Event("currencyChanged")); // Context handles update now
+    setCurrency(newVal);
   };
 
   const handleGhostToggle = () => {
@@ -178,17 +181,11 @@ export default function ProfilePage() {
       return;
 
     setIsDeleting(true);
-
-    // 1. Déconnexion
     await logout();
-
-    // 2. Nettoyage LocalStorage complet
-    // On garde le theme pour éviter un flashbang blanc
     const theme = localStorage.getItem("theme");
     localStorage.clear();
     if (theme) localStorage.setItem("theme", theme);
 
-    // 3. Feedback et Redirection
     setTimeout(() => {
       alert("Données locales effacées avec succès.");
       setIsDeleting(false);
@@ -196,7 +193,6 @@ export default function ProfilePage() {
     }, 1000);
   };
 
-  // Formatage date inscription
   const joinDate = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("fr-FR", {
         year: "numeric",
@@ -204,7 +200,6 @@ export default function ProfilePage() {
       })
     : "Récemment";
 
-  // Calcul du Plan
   const walletCount = linkedWallets.length + (walletAddress ? 1 : 0);
   const maxWalletsFree = 1;
   const isPro = false;
@@ -225,21 +220,35 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="mt-6">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nom d'affichage
+            <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
+              {/* Read-Only Full Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Nom complet (Non modifiable)
                 </label>
                 <input
                   type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-                  placeholder="Votre nom"
+                  value={editFullName}
+                  disabled
+                  className="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-[#2A2D35] text-gray-500 cursor-not-allowed select-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              {/* Editable Username */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Pseudo (Nom d'affichage)
+                </label>
+                <input
+                  type="text"
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2A2D35] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
+                  placeholder="Votre pseudo"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
@@ -376,7 +385,7 @@ export default function ProfilePage() {
                 {displayAvatar ? (
                   <img
                     src={displayAvatar}
-                    alt={displayName}
+                    alt={displayUsername}
                     className="w-full h-full object-cover"
                     onError={(e: any) => {
                       e.target.style.display = "none"; // Hide if broken
@@ -399,7 +408,7 @@ export default function ProfilePage() {
             <div className="flex-1 text-center md:text-left space-y-2">
               <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 justify-center md:justify-start">
                 <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2 group/name">
-                  {displayName}
+                  {displayUsername}
                   <button
                     onClick={handleStartEdit}
                     className="opacity-50 hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full text-gray-400 hover:text-[#D4AF37]"
@@ -412,7 +421,7 @@ export default function ProfilePage() {
 
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 font-mono bg-gray-100 dark:bg-black/20 px-2 py-1 rounded inline-block">
-                  {displayIdentity}
+                  {displayFullName || displayIdentity}
                 </p>
               </div>
 
