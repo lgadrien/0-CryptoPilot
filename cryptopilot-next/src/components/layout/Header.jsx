@@ -103,9 +103,9 @@ function Header() {
               className="w-8 h-8 md:w-9 md:h-9 group-hover:rotate-12 group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]"
               priority
             />
-            <h1 className="text-lg md:text-2xl font-bold text-[#D4AF37] tracking-wide group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+            <div className="text-lg md:text-2xl font-bold text-[#D4AF37] tracking-wide group-hover:drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
               CryptoPilot
-            </h1>
+            </div>
           </Link>
         </div>
 
@@ -264,7 +264,7 @@ function Header() {
                   href="/register"
                   className="bg-[#D4AF37] text-[#0B0D12] px-5 py-2.5 rounded-lg font-bold hover:bg-[#F5D76E] shadow-lg shadow-[#D4AF37]/20 transform hover:-translate-y-0.5"
                 >
-                  Démarrer
+                  Commencer gratuitement
                 </Link>
               </div>
             )}
@@ -385,7 +385,7 @@ function Header() {
                   onClick={closeMobileMenu}
                   className="w-full text-center py-3 rounded-xl bg-[#D4AF37] text-[#0B0D12] font-bold shadow-lg"
                 >
-                  Commencer
+                  Commencer gratuitement
                 </Link>
               </div>
             )}

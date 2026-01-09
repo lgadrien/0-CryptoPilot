@@ -14,7 +14,7 @@ const FeatureItem = ({ included, text }) => (
       className={
         included
           ? "text-gray-700 dark:text-gray-200"
-          : "text-gray-400 dark:text-gray-500 line-through"
+          : "text-gray-400 dark:text-gray-500 line-through opacity-70"
       }
     >
       {text}
@@ -70,7 +70,7 @@ const PricingCard = memo(({ plan, featured = false }) => {
             {price}
           </span>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-500">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           {description}
         </p>
       </div>
@@ -175,7 +175,7 @@ export default function PricingSection() {
       </div>
 
       <div className="mt-8 md:mt-10 text-center shrink-0">
-        <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-gray-500 font-medium">
+        <div className="flex items-center justify-center gap-2 text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium">
           <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-[#D4AF37]" />
           <span>
             Satisfait ou Remboursé sous 30 jours. Zéro question posée.

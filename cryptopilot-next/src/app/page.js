@@ -169,28 +169,32 @@ export default function Home() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-white/80 dark:bg-black/40 blur-3xl -z-10 rounded-full pointer-events-none transition-colors duration-300"></div>
 
             {/* Titre */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-3 sm:mb-4 tracking-tight animate-fade-in">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black mb-3 sm:mb-4 tracking-tight animate-fade-in">
+              Maîtrisez vos investissements crypto avec{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F5D76E] to-[#D4AF37] bg-[length:200%] animate-gradient">
-                CryptoPilot
+                précision
               </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium mb-6 sm:mb-8 px-4 max-w-2xl mx-auto">
-              Votre tableau de bord crypto personnel pour suivre, analyser et
-              optimiser vos investissements
+              Suivez, analysez et optimisez votre portefeuille en temps réel. La
+              plateforme tout-en-un pour les investisseurs exigeants.
             </p>
 
             {/* Features mini - Glassmorphism renforcé */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 px-4 max-w-3xl mx-auto">
-              {features.map((feature, index) => (
-                <FeatureCard
-                  key={index}
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                />
-              ))}
-            </div>
+            <section aria-label="Fonctionnalités principales">
+              <h2 className="sr-only">Nos fonctionnalités principales</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 px-4 max-w-3xl mx-auto">
+                {features.map((feature, index) => (
+                  <FeatureCard
+                    key={index}
+                    icon={feature.icon}
+                    title={feature.title}
+                    description={feature.description}
+                  />
+                ))}
+              </div>
+            </section>
 
             {/* Boutons */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
